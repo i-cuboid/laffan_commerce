@@ -1,6 +1,6 @@
-﻿using Grand.Business.Core.Interfaces.Common.Logging;
-using Grand.Business.System.Services.Migrations;
-using Grand.Domain.Data;
+﻿using Grand.Business.System.Services.Migrations;
+using Grand.Data;
+using Grand.Domain;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;

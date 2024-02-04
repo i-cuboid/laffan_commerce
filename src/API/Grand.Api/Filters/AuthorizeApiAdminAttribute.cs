@@ -1,6 +1,6 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Utilities.Common.Security;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +22,7 @@ namespace Grand.Api.Filters
         public AuthorizeApiAdminAttribute(bool ignore = false) : base(typeof(AuthorizeApiAdminFilter))
         {
             _ignoreFilter = ignore;
-            Arguments = new object[] { ignore };
+            Arguments = [ignore];
         }
 
         public bool IgnoreFilter => _ignoreFilter;

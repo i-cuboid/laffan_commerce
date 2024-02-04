@@ -175,13 +175,8 @@ namespace Grand.Web.Vendor.Controllers
             await _orderService.InsertOrderNote(new OrderNote {
                 Note = $"A shipment #{shipment.ShipmentNumber} has been added",
                 DisplayToCustomer = false,
-                CreatedOnUtc = DateTime.UtcNow,
                 OrderId = order.Id
             });
-
-            _ = _shipmentViewModelService.LogShipment(shipment.Id,
-                $"A shipment #{shipment.ShipmentNumber} has been added");
-
             Success(_translationService.GetResource("Admin.Orders.Shipments.Added"));
             return continueEditing
                 ? RedirectToAction("ShipmentDetails", new { id = shipment.Id })
@@ -215,13 +210,8 @@ namespace Grand.Web.Vendor.Controllers
             await _orderService.InsertOrderNote(new OrderNote {
                 Note = $"A shipment #{shipment.ShipmentNumber} has been deleted",
                 DisplayToCustomer = false,
-                CreatedOnUtc = DateTime.UtcNow,
                 OrderId = shipment.OrderId
             });
-
-            _ = _shipmentViewModelService.LogShipment(shipment.Id,
-                $"A shipment #{shipment.ShipmentNumber} has been deleted");
-
             Success(_translationService.GetResource("Admin.Orders.Shipments.Deleted"));
 
             return RedirectToAction("Edit", "Order", new { Id = shipment.OrderId });

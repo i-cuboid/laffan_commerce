@@ -268,7 +268,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
         private async Task<PaymentTransaction> PreparePaymentTransaction(PlaceOrderContainer details)
         {
             var update = false;
-            PaymentTransaction paymentTransaction = new PaymentTransaction { CreatedOnUtc = DateTime.UtcNow };
+            PaymentTransaction paymentTransaction = new PaymentTransaction();
             var paymentTransactionId = details.Customer.GetUserFieldFromEntity<string>(SystemCustomerFieldNames.PaymentTransaction, _workContext.CurrentStore.Id);
             if (!string.IsNullOrEmpty(paymentTransactionId))
             {
@@ -276,10 +276,9 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 if (paymentTransaction != null)
                 {
                     update = true;
-                    paymentTransaction.UpdatedOnUtc = DateTime.UtcNow;
                 }
                 else
-                     paymentTransaction = new PaymentTransaction { CreatedOnUtc = DateTime.UtcNow };
+                     paymentTransaction = new PaymentTransaction();
             }
 
             paymentTransaction.TransactionStatus = TransactionStatus.Pending;
@@ -725,8 +724,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                     SenderEmail = giftVoucherSenderEmail,
                     Message = giftVoucherMessage,
                     IsRecipientNotified = false,
-                    StoreId = _orderSettings.GiftVouchers_Assign_StoreId ? _workContext.CurrentStore.Id : string.Empty,
-                    CreatedOnUtc = DateTime.UtcNow
+                    StoreId = _orderSettings.GiftVouchers_Assign_StoreId ? _workContext.CurrentStore.Id : string.Empty
                 };
                 await _giftVoucherService.InsertGiftVoucher(gc);
             }
@@ -820,7 +818,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 await _auctionService.UpdateAuctionEnded(product, true, true);
                 await _auctionService.UpdateHighestBid(product, product.Price, order.CustomerId);
                 await _messageProviderService.SendAuctionEndedBinCustomerMessage(product, order.CustomerId, order.CustomerLanguageId, order.StoreId);
-                await _auctionService.InsertBid(new Bid() {
+                await _auctionService.InsertBid(new Bid {
                     CustomerId = order.CustomerId,
                     OrderId = order.Id,
                     Amount = product.Price,
@@ -855,8 +853,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                     DiscountId = discount.DiscountId,
                     CouponCode = discount.CouponCode,
                     OrderId = order.Id,
-                    CustomerId = order.CustomerId,
-                    CreatedOnUtc = DateTime.UtcNow
+                    CustomerId = order.CustomerId
                 };
                 await _discountService.InsertDiscountUsageHistory(duh);
             }
@@ -953,8 +950,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                 IsRecurring = details.IsRecurring,
                 RecurringCycleLength = details.RecurringCycleLength,
                 RecurringCyclePeriodId = details.RecurringCyclePeriodId,
-                RecurringTotalCycles = details.RecurringTotalCycles,
-                CreatedOnUtc = DateTime.UtcNow
+                RecurringTotalCycles = details.RecurringTotalCycles
             };
 
             foreach (var item in details.Taxes)
@@ -1055,7 +1051,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                         Note =
                             $"Order placed by a store owner ('{originalCustomerIfImpersonated.Email}'. ID = {originalCustomerIfImpersonated.Id}) impersonating the customer.",
                         DisplayToCustomer = false,
-                        CreatedOnUtc = DateTime.UtcNow,
                         OrderId = order.Id
                     });
                 }
@@ -1064,7 +1059,6 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                     await orderService.InsertOrderNote(new OrderNote {
                         Note = "Order placed",
                         DisplayToCustomer = false,
-                        CreatedOnUtc = DateTime.UtcNow,
                         OrderId = order.Id
 
                     });
@@ -1082,8 +1076,10 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
                         await pdfService.PrintOrderToPdf(order, order.CustomerLanguageId) : null;
                     orderPlacedAttachmentFileName = orderSettings.AttachPdfInvoiceToOrderPlacedEmail && !orderSettings.AttachPdfInvoiceToBinary ?
                         "order.pdf" : null;
-                    orderPlacedAttachments = orderSettings.AttachPdfInvoiceToOrderPlacedEmail && orderSettings.AttachPdfInvoiceToBinary ?
-                        new List<string> { await pdfService.SaveOrderToBinary(order, order.CustomerLanguageId) } : new List<string>();
+                    orderPlacedAttachments = orderSettings.AttachPdfInvoiceToOrderPlacedEmail && orderSettings.AttachPdfInvoiceToBinary ? [
+                            await pdfService.SaveOrderToBinary(order, order.CustomerLanguageId)
+                        ]
+                        : [];
                 }
                 catch (Exception ex)
                 {
@@ -1095,7 +1091,7 @@ namespace Grand.Business.Checkout.Commands.Handlers.Orders
 
                 if (order.OrderItems.Any(x => !string.IsNullOrEmpty(x.VendorId)))
                 {
-                    var vendors = await mediator.Send(new GetVendorsInOrderQuery() { Order = order });
+                    var vendors = await mediator.Send(new GetVendorsInOrderQuery { Order = order });
                     foreach (var vendor in vendors)
                     {
                         await messageProviderService.SendOrderPlacedVendorMessage(order, customer, vendor, languageSettings.DefaultAdminLanguageId);

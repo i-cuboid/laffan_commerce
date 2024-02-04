@@ -11,7 +11,6 @@ using Grand.Business.Core.Interfaces.Checkout.Shipping;
 using Grand.Business.Core.Interfaces.Common.Addresses;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Interfaces.Common.Stores;
 using Grand.Business.Core.Interfaces.Customers;
 using Grand.Business.Core.Interfaces.Messages;
@@ -30,9 +29,7 @@ using Grand.Web.Admin.Interfaces;
 using Grand.Web.Admin.Models.Orders;
 using Grand.Web.Common.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
 namespace Grand.Web.Admin.Services
@@ -48,7 +45,6 @@ namespace Grand.Web.Admin.Services
         private readonly IDiscountService _discountService;
         private readonly ITranslationService _translationService;
         private readonly IWorkContext _workContext;
-        private readonly IGroupService _groupService;
         private readonly ICurrencyService _currencyService;
         private readonly IPaymentService _paymentService;
         private readonly IPaymentTransactionService _paymentTransactionService;
@@ -68,9 +64,8 @@ namespace Grand.Web.Admin.Services
         private readonly ITaxService _taxService;
         private readonly IMerchandiseReturnService _merchandiseReturnService;
         private readonly ICustomerService _customerService;
-        private readonly ICustomerActivityService _customerActivityService;
         private readonly IWarehouseService _warehouseService;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IProductAttributeFormatter _productAttributeFormatter;
         private readonly IShoppingCartValidator _shoppingCartValidator;
         private readonly CurrencySettings _currencySettings;
         private readonly TaxSettings _taxSettings;
@@ -90,7 +85,6 @@ namespace Grand.Web.Admin.Services
             IDiscountService discountService,
             ITranslationService translationService,
             IWorkContext workContext,
-            IGroupService groupService,
             ICurrencyService currencyService,
             IPaymentService paymentService,
             IPaymentTransactionService paymentTransactionService,
@@ -110,16 +104,15 @@ namespace Grand.Web.Admin.Services
             ITaxService taxService,
             IMerchandiseReturnService merchandiseReturnService,
             ICustomerService customerService,
-            ICustomerActivityService customerActivityService,
             IWarehouseService warehouseService,
-            IServiceProvider serviceProvider,
             IShoppingCartValidator shoppingCartValidator,
             CurrencySettings currencySettings,
             TaxSettings taxSettings,
             AddressSettings addressSettings,
             IOrderTagService orderTagService,
             IOrderStatusService orderStatusService,
-            IMediator mediator)
+            IMediator mediator,
+            IProductAttributeFormatter productAttributeFormatter)
         {
             _orderService = orderService;
             _pricingService = priceCalculationService;
@@ -128,7 +121,6 @@ namespace Grand.Web.Admin.Services
             _discountService = discountService;
             _translationService = translationService;
             _workContext = workContext;
-            _groupService = groupService;
             _currencyService = currencyService;
             _paymentService = paymentService;
             _paymentTransactionService = paymentTransactionService;
@@ -147,9 +139,7 @@ namespace Grand.Web.Admin.Services
             _pictureService = pictureService;
             _taxService = taxService;
             _merchandiseReturnService = merchandiseReturnService;
-            _customerActivityService = customerActivityService;
             _warehouseService = warehouseService;
-            _serviceProvider = serviceProvider;
             _shoppingCartValidator = shoppingCartValidator;
             _currencySettings = currencySettings;
             _taxSettings = taxSettings;
@@ -158,6 +148,7 @@ namespace Grand.Web.Admin.Services
             _orderTagService = orderTagService;
             _orderStatusService = orderStatusService;
             _mediator = mediator;
+            _productAttributeFormatter = productAttributeFormatter;
         }
 
         #endregion
@@ -227,9 +218,10 @@ namespace Grand.Web.Admin.Services
 
             //shipping statuses
             model.AvailableShippingStatuses =
-                ShippingStatus.Pending.ToSelectList(_translationService, _workContext, false).ToList();
+                ShippingStatus.ShippingNotRequired.ToSelectList(_translationService, _workContext, false).ToList();
             model.AvailableShippingStatuses.Insert(0,
                 new SelectListItem { Text = _translationService.GetResource("Admin.Common.All"), Value = " " });
+            
             if (shippingStatusId.HasValue)
             {
                 //pre-select value?
@@ -296,7 +288,7 @@ namespace Grand.Web.Admin.Services
             int? orderStatus = model.OrderStatusId > 0 ? model.OrderStatusId : null;
             PaymentStatus? paymentStatus = model.PaymentStatusId > 0 ? (PaymentStatus?)model.PaymentStatusId : null;
             ShippingStatus? shippingStatus =
-                model.ShippingStatusId > 0 ? (ShippingStatus?)model.ShippingStatusId : null;
+                model.ShippingStatusId.HasValue ? (ShippingStatus?)model.ShippingStatusId : null;
 
 
             var filterByProductId = "";
@@ -418,7 +410,7 @@ namespace Grand.Web.Admin.Services
                     model.SalesEmployeeName = salesEmployee.Name;
                 }
             }
-            
+
             //order's tags
             if (order.OrderTags.Any())
             {
@@ -695,7 +687,7 @@ namespace Grand.Web.Admin.Services
                         model.ShippingAddress.NoteEnabled = _addressSettings.NoteEnabled;
 
                         model.ShippingAddressGoogleMapsUrl =
-                            $"http://maps.google.com/maps?f=q&hl=en&ie=UTF8&oe=UTF8&geocode=&q={WebUtility.UrlEncode(order.ShippingAddress.Address1 + " " + order.ShippingAddress.ZipPostalCode + " " + order.ShippingAddress.City + " " + (!string.IsNullOrEmpty(order.ShippingAddress.CountryId) ? (await _countryService.GetCountryById(order.ShippingAddress.CountryId))?.Name : ""))}";
+                            $"https://maps.google.com/maps?f=q&hl=en&ie=UTF8&oe=UTF8&geocode=&q={WebUtility.UrlEncode(order.ShippingAddress.Address1 + " " + order.ShippingAddress.ZipPostalCode + " " + order.ShippingAddress.City + " " + (!string.IsNullOrEmpty(order.ShippingAddress.CountryId) ? (await _countryService.GetCountryById(order.ShippingAddress.CountryId))?.Name : ""))}";
                     }
                 }
                 else
@@ -1018,8 +1010,7 @@ namespace Grand.Web.Admin.Services
                 DisplayToCustomer = displayToCustomer,
                 Note = message,
                 DownloadId = downloadId,
-                OrderId = order.Id,
-                CreatedOnUtc = DateTime.UtcNow
+                OrderId = order.Id
             };
             await _orderService.InsertOrderNote(orderNote);
 
@@ -1049,15 +1040,6 @@ namespace Grand.Web.Admin.Services
             }
         }
 
-        public virtual Task LogEditOrder(string orderId)
-        {
-            var httpContextAccessor = _serviceProvider.GetRequiredService<IHttpContextAccessor>();
-            _ = _customerActivityService.InsertActivity("EditOrder", orderId,
-                _workContext.CurrentCustomer, httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString(),
-                _translationService.GetResource("ActivityLog.EditOrder"), orderId);
-            return Task.CompletedTask;
-        }
-
         public virtual async Task<Address> UpdateOrderAddress(Order order, Address address, OrderAddressModel model,
             List<CustomAttribute> customAttributes)
         {
@@ -1069,10 +1051,8 @@ namespace Grand.Web.Admin.Services
             await _orderService.InsertOrderNote(new OrderNote {
                 Note = "Address has been edited",
                 DisplayToCustomer = false,
-                CreatedOnUtc = DateTime.UtcNow,
                 OrderId = order.Id
             });
-            _ = LogEditOrder(order.Id);
             return address;
         }
 
@@ -1204,11 +1184,8 @@ namespace Grand.Web.Admin.Services
                     shoppingCartItem));
             if (warnings.Count == 0)
             {
-                //no errors
-                var productAttributeFormatter = _serviceProvider.GetRequiredService<IProductAttributeFormatter>();
-                //attributes
                 var attributeDescription =
-                    await productAttributeFormatter.FormatAttributes(product, customattributes, customer);
+                    await _productAttributeFormatter.FormatAttributes(product, customattributes, customer);
 
                 //save item
                 var orderItem = new OrderItem {
@@ -1239,8 +1216,6 @@ namespace Grand.Web.Admin.Services
 
                 await _mediator.Send(new InsertOrderItemCommand
                     { Order = order, OrderItem = orderItem, Product = product });
-
-                _ = LogEditOrder(order.Id);
             }
 
             return warnings;

@@ -1,6 +1,6 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Utilities.Common.Security;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Stores;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -22,7 +22,7 @@ namespace Grand.Web.Common.Filters
         public PublicStoreAttribute(bool ignore = false) : base(typeof(AccessPublicStoreFilter))
         {
             _ignoreFilter = ignore;
-            Arguments = new object[] { ignore };
+            Arguments = [ignore];
         }
 
         public bool IgnoreFilter => _ignoreFilter;

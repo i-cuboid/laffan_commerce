@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Customers.Services;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
@@ -25,7 +25,7 @@ namespace Grand.Business.Customers.Tests.Services
             _repository = new MongoDBRepositoryTest<SalesEmployee>();
             _mediatorMock = new Mock<IMediator>();
 
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), _mediatorMock.Object, new CacheConfig { DefaultCacheTimeMinutes = 1});
             _salesEmployeeService = new SalesEmployeeService(_repository, _mediatorMock.Object, _cacheBase);
         }
 

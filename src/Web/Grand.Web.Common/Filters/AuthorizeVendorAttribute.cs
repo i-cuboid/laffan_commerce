@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Utilities.Common.Security;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -23,7 +23,7 @@ namespace Grand.Web.Common.Filters
         public AuthorizeVendorAttribute(bool ignore = false) : base(typeof(AuthorizeVendorFilter))
         {
             _ignoreFilter = ignore;
-            Arguments = new object[] { ignore };
+            Arguments = [ignore];
         }
 
         public bool IgnoreFilter => _ignoreFilter;

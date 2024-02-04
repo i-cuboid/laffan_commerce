@@ -2,7 +2,7 @@
 using Grand.Infrastructure.Extensions;
 using Grand.Domain;
 using Grand.Domain.Catalog;
-using Grand.Domain.Data;
+using Grand.Data;
 using MediatR;
 
 namespace Grand.Business.Catalog.Services.Products
@@ -94,7 +94,6 @@ namespace Grand.Business.Catalog.Services.Products
                 .Set(x => x.ReviewText, productReview.ReviewText)
                 .Set(x => x.ReplyText, productReview.ReplyText)
                 .Set(x => x.Signature, productReview.Signature)
-                .Set(x => x.UpdatedOnUtc, DateTime.UtcNow)
                 .Set(x => x.IsApproved, productReview.IsApproved)
                 .Set(x => x.HelpfulNoTotal, productReview.HelpfulNoTotal)
                 .Set(x => x.HelpfulYesTotal, productReview.HelpfulYesTotal)

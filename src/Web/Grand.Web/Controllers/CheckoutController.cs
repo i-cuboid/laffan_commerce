@@ -7,7 +7,6 @@ using Grand.Business.Core.Interfaces.Checkout.Payments;
 using Grand.Business.Core.Interfaces.Checkout.Shipping;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Interfaces.Customers;
 using Grand.Business.Core.Utilities.Checkout;
 using Grand.Domain.Common;
@@ -47,7 +46,6 @@ namespace Grand.Web.Controllers
         private readonly IPaymentTransactionService _paymentTransactionService;
         private readonly ILogger<CheckoutController> _logger;
         private readonly IOrderService _orderService;
-        private readonly ICustomerActivityService _customerActivityService;
         private readonly IMediator _mediator;
         private readonly IProductService _productService;
         private readonly IShoppingCartValidator _shoppingCartValidator;
@@ -74,7 +72,6 @@ namespace Grand.Web.Controllers
             IPaymentTransactionService paymentTransactionService,
             ILogger<CheckoutController> logger,
             IOrderService orderService,
-            ICustomerActivityService customerActivityService,
             IMediator mediator,
             IProductService productService,
             IShoppingCartValidator shoppingCartValidator,
@@ -96,7 +93,6 @@ namespace Grand.Web.Controllers
             _paymentTransactionService = paymentTransactionService;
             _logger = logger;
             _orderService = orderService;
-            _customerActivityService = customerActivityService;
             _mediator = mediator;
             _productService = productService;
             _shoppingCartValidator = shoppingCartValidator;
@@ -114,7 +110,7 @@ namespace Grand.Web.Controllers
         [NonAction]
         protected IShippingRateCalculationProvider GetShippingComputation(string input)
         {
-            var shippingMethodName = input.Split(new[] { ":" }, StringSplitOptions.RemoveEmptyEntries)[1];
+            var shippingMethodName = input.Split([":"], StringSplitOptions.RemoveEmptyEntries)[1];
             var shippingMethod = _shippingService.LoadShippingRateCalculationProviderBySystemName(shippingMethodName);
             if (shippingMethod == null)
                 throw new Exception("Shipping method is not selected");
@@ -130,29 +126,7 @@ namespace Grand.Web.Controllers
             return warnings;
         }
 
-        private async Task<CheckoutPaymentMethodModel> GetCheckoutPaymentMethodModel(IList<ShoppingCartItem> cart)
-        {
-            var filterByCountryId = "";
-            if (_addressSettings.CountryEnabled &&
-                _workContext.CurrentCustomer.BillingAddress != null &&
-                !string.IsNullOrWhiteSpace(_workContext.CurrentCustomer.BillingAddress.CountryId))
-            {
-                filterByCountryId = _workContext.CurrentCustomer.BillingAddress.CountryId;
-            }
-
-            var paymentMethodModel = await _mediator.Send(new GetPaymentMethod {
-                Cart = cart,
-                Currency = _workContext.WorkingCurrency,
-                Customer = _workContext.CurrentCustomer,
-                FilterByCountryId = filterByCountryId,
-                Language = _workContext.WorkingLanguage,
-                Store = _workContext.CurrentStore
-            });
-
-            return paymentMethodModel;
-        }
-
-        protected IList<string> SerializeModelState(ModelStateDictionary modelState)
+        private IList<string> SerializeModelState(ModelStateDictionary modelState)
         {
             var errors = new List<string>();
             var valuerrors = modelState.Where(entry => entry.Value.Errors.Any());
@@ -395,8 +369,7 @@ namespace Grand.Web.Controllers
                 if (sciWarnings.Any())
                     return RedirectToRoute("ShoppingCart", new { checkoutAttributes = true });
             }
-
-            var paymentMethodModel = await GetCheckoutPaymentMethodModel(cart);
+            
             var requiresShipping = cart.RequiresShipping();
             var model = new CheckoutModel {
                 ShippingRequired = requiresShipping,
@@ -414,8 +387,7 @@ namespace Grand.Web.Controllers
                     Language = _workContext.WorkingLanguage,
                     Store = _workContext.CurrentStore,
                     PrePopulateNewAddressWithCustomerFields = true
-                }),
-                HasSinglePaymentMethod = paymentMethodModel.PaymentMethods?.Count == 1
+                })
             };
             if (!requiresShipping && !model.BillingAddress.ExistingAddresses.Any())
             {
@@ -490,9 +462,7 @@ namespace Grand.Web.Controllers
                                 : model.BillingNewAddress.ToEntity(_workContext.CurrentCustomer, addressSettings);
 
                         address.Attributes = await _mediator.Send(new GetParseCustomAddressAttributes { SelectedAttributes = model.BillingNewAddress.SelectedAttributes });
-                        address.CreatedOnUtc = DateTime.UtcNow;
-                        address.AddressType =
-                            _addressSettings.AddressTypeEnabled ? AddressType.Billing : AddressType.Any;
+                        address.AddressType = _addressSettings.AddressTypeEnabled ? AddressType.Billing : AddressType.Any;
 
                         _workContext.CurrentCustomer.Addresses.Add(address);
                         await _customerService.InsertAddress(address, _workContext.CurrentCustomer.Id);
@@ -642,7 +612,6 @@ namespace Grand.Web.Controllers
                                     : model.ShippingNewAddress.ToEntity(_workContext.CurrentCustomer, addressSettings);
 
                             address.Attributes = await _mediator.Send(new GetParseCustomAddressAttributes { SelectedAttributes = model.ShippingNewAddress.SelectedAttributes });
-                            address.CreatedOnUtc = DateTime.UtcNow;
                             address.AddressType = _addressSettings.AddressTypeEnabled
                                 ? model.BillToTheSameAddress ? AddressType.Any : AddressType.Shipping
                                 : AddressType.Any;
@@ -714,7 +683,7 @@ namespace Grand.Web.Controllers
                 if (string.IsNullOrEmpty(model.ShippingOption))
                     throw new Exception("Selected shipping method can't be parsed");
                 
-                var splitOption = model.ShippingOption.Split(new[] { ":" }, StringSplitOptions.RemoveEmptyEntries);
+                var splitOption = model.ShippingOption.Split([":"], StringSplitOptions.RemoveEmptyEntries);
                 if (splitOption.Length != 2)
                     throw new Exception("Selected shipping method can't be parsed");
 
@@ -980,11 +949,6 @@ namespace Grand.Web.Controllers
                 var placeOrderResult = await _mediator.Send(new PlaceOrderCommand());
                 if (placeOrderResult.Success)
                 {
-                    _ = _customerActivityService.InsertActivity("PublicStore.PlaceOrder", "",
-                        _workContext.CurrentCustomer, HttpContext.Connection?.RemoteIpAddress?.ToString(),
-                        _translationService.GetResource("ActivityLog.PublicStore.PlaceOrder"),
-                        placeOrderResult.PlacedOrder.Id);
-
                     var paymentMethod =
                         _paymentService.LoadPaymentMethodBySystemName(placeOrderResult.PaymentTransaction
                             .PaymentMethodSystemName);

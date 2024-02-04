@@ -2,7 +2,7 @@ using Grand.Business.Core.Commands.Checkout.Orders;
 using Grand.Business.Core.Interfaces.Checkout.Orders;
 using Grand.Business.Core.Queries.Checkout.Orders;
 using Grand.Domain;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Orders;
 using Grand.Domain.Payments;
 using Grand.Domain.Shipping;
@@ -260,23 +260,6 @@ namespace Grand.Business.Checkout.Services.Orders
                     select orderItem;
 
             return Task.FromResult(query.FirstOrDefault());
-        }
-
-        /// <summary>
-        /// Delete an order item
-        /// </summary>
-        /// <param name="orderItem">The order item</param>
-        public virtual async Task DeleteOrderItem(OrderItem orderItem)
-        {
-            if (orderItem == null)
-                throw new ArgumentNullException(nameof(orderItem));
-
-            var order = await GetOrderByOrderItemId(orderItem.Id);
-
-            await _orderRepository.PullFilter(order.Id, x => x.OrderItems, x => x.Id == orderItem.Id);
-
-            //event notification
-            await _mediator.EntityDeleted(orderItem);
         }
 
         #endregion

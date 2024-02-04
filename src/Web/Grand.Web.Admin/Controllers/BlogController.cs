@@ -67,9 +67,15 @@ namespace Grand.Web.Admin.Controllers
 
         #region Blog posts
 
-        public IActionResult Index() => RedirectToAction("List");
+        public IActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
 
-        public IActionResult List() => View();
+        public IActionResult List()
+        {
+            return View();
+        }
 
         [PermissionAuthorizeAction(PermissionActionName.List)]
         [HttpPost]
@@ -106,7 +112,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
                 var blogPost = await _blogViewModelService.InsertBlogPostModel(model);
                 Success(_translationService.GetResource("Admin.Content.Blog.BlogPosts.Added"));
@@ -172,7 +178,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 blogPost = await _blogViewModelService.UpdateBlogPostModel(model, blogPost);
@@ -277,7 +283,10 @@ namespace Grand.Web.Admin.Controllers
         #endregion
 
         #region Categories
-        public IActionResult CategoryList() => View();
+        public IActionResult CategoryList()
+        {
+            return View();
+        }
 
         [PermissionAuthorizeAction(PermissionActionName.List)]
         [HttpPost]
@@ -311,7 +320,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 var blogCategory = model.ToEntity();
@@ -377,7 +386,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 blogCategory = model.ToEntity(blogCategory);

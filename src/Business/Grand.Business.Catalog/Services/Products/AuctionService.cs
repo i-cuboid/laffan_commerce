@@ -6,7 +6,7 @@ using Grand.Infrastructure.Extensions;
 using Grand.Domain;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Localization;
 using Grand.Domain.Stores;
 using MediatR;
@@ -98,8 +98,6 @@ namespace Grand.Business.Catalog.Services.Products
         {
             product.HighestBid = bid;
             product.HighestBidder = highestBidder;
-            product.UpdatedOnUtc = DateTime.UtcNow;
-
             await _productRepository.UpdateAsync(product);
 
             await _cacheBase.RemoveAsync(string.Format(CacheKey.PRODUCTS_BY_ID_KEY, product.Id));
@@ -117,7 +115,6 @@ namespace Grand.Business.Catalog.Services.Products
         public virtual async Task UpdateAuctionEnded(Product product, bool ended, bool endDate = false)
         {
             product.AuctionEnded = ended;
-            product.UpdatedOnUtc = DateTime.UtcNow;
             if (endDate)
                 product.AvailableEndDateTimeUtc = DateTime.UtcNow;
 
@@ -153,8 +150,7 @@ namespace Grand.Business.Catalog.Services.Products
             {
                 if (latest.CustomerId != customer.Id)
                 {
-                    await _mediator.Send(new SendOutBidCustomerCommand()
-                    {
+                    await _mediator.Send(new SendOutBidCustomerCommand {
                         Product = product,
                         Bid = latest,
                         Language = language

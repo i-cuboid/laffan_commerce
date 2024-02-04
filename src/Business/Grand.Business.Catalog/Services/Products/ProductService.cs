@@ -5,7 +5,7 @@ using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Domain;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Orders;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
@@ -110,7 +110,7 @@ namespace Grand.Business.Catalog.Services.Products
         {
             if (string.IsNullOrEmpty(productId))
                 return null;
-            var product = await GetProductById(productId) ?? await _mediator.Send(new GetProductArchByIdQuery() { Id = productId });
+            var product = await GetProductById(productId) ?? await _mediator.Send(new GetProductArchByIdQuery { Id = productId });
             return product;
         }
         /// <summary>
@@ -201,7 +201,6 @@ namespace Grand.Business.Catalog.Services.Products
                 .Set(x => x.BasepriceUnitId, product.BasepriceUnitId)
                 .Set(x => x.CallForPrice, product.CallForPrice)
                 .Set(x => x.CatalogPrice, product.CatalogPrice)
-                .Set(x => x.CreatedOnUtc, product.CreatedOnUtc)
                 .Set(x => x.EnteredPrice, product.EnteredPrice)
                 .Set(x => x.CustomerGroups, product.CustomerGroups)
                 .Set(x => x.DeliveryDateId, product.DeliveryDateId)
@@ -294,11 +293,11 @@ namespace Grand.Business.Catalog.Services.Products
                 .Set(x => x.Weight, product.Weight)
                 .Set(x => x.Width, product.Width)
                 .Set(x => x.UserFields, product.UserFields)
-                .Set(x => x.UpdatedOnUtc, DateTime.UtcNow);
+                .Set(x => x.Ticks, DateTime.UtcNow.Ticks);
 
             await _productRepository.UpdateOneAsync(x => x.Id == product.Id, update);
 
-            if (oldProduct.AdditionalShippingCharge != product.AdditionalShippingCharge ||
+            if (!oldProduct.AdditionalShippingCharge.Equals(product.AdditionalShippingCharge) ||
                 oldProduct.IsFreeShipping != product.IsFreeShipping ||
                 oldProduct.IsGiftVoucher != product.IsGiftVoucher ||
                 oldProduct.IsShipEnabled != product.IsShipEnabled ||

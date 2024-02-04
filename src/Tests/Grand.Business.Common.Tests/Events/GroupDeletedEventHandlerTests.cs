@@ -2,7 +2,7 @@
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Tests.Caching;
@@ -25,7 +25,7 @@ namespace Grand.Business.Common.Tests.Events
         {
             _repository = new MongoDBRepositoryTest<Customer>();
             _product = new MongoDBRepositoryTest<Product>();
-            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), new Mock<IMediator>().Object, new CacheConfig(){ DefaultCacheTimeMinutes = 1});
+            _cacheBase = new MemoryCacheBase(MemoryCacheTest.Get(), new Mock<IMediator>().Object, new CacheConfig { DefaultCacheTimeMinutes = 1});
 
             _handler = new GroupDeletedEventHandler(_repository, _product, _cacheBase);
         }
@@ -45,7 +45,7 @@ namespace Grand.Business.Common.Tests.Events
             customer2.Groups.Add("3");
             await _repository.InsertAsync(customer2);
             //Act
-            var notification = new Infrastructure.Events.EntityDeleted<CustomerGroup>(new CustomerGroup() { Id = "1" });
+            var notification = new Infrastructure.Events.EntityDeleted<CustomerGroup>(new CustomerGroup { Id = "1" });
             await _handler.Handle(notification, CancellationToken.None);
 
             //Assert

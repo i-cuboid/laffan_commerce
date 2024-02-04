@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Catalog.Events.Handlers;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
-using Grand.Domain.Data;
+using Grand.Data;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Grand.Business.Catalog.Tests.Events.Handlers
@@ -24,14 +24,17 @@ namespace Grand.Business.Catalog.Tests.Events.Handlers
         {
             //Arrange
             var brand = new Brand();
-            var product = new Product();
-            product.BrandId = brand.Id;
+            var product = new Product {
+                BrandId = brand.Id
+            };
             await _repository.InsertAsync(product);
-            var product2 = new Product();
-            product2.BrandId = brand.Id;
+            var product2 = new Product {
+                BrandId = brand.Id
+            };
             await _repository.InsertAsync(product2);
-            var product3 = new Product();
-            product3.BrandId = "1";
+            var product3 = new Product {
+                BrandId = "1"
+            };
             await _repository.InsertAsync(product3);
 
             //Act

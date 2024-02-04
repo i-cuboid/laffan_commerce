@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Utilities.Common.Security;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Security;
 using Grand.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +24,7 @@ namespace Grand.Web.Common.Filters
         public AuthorizeAdminAttribute(bool ignore = false) : base(typeof(AuthorizeAdminFilter))
         {
             _ignoreFilter = ignore;
-            Arguments = new object[] { ignore };
+            Arguments = [ignore];
         }
 
         public bool IgnoreFilter => _ignoreFilter;
@@ -93,7 +93,7 @@ namespace Grand.Web.Common.Filters
 
                     //whether current customer is vendor
                     if (await _groupService.IsVendor(_workContext.CurrentCustomer) || _workContext.CurrentVendor is not null)
-                        filterContext.Result = new RedirectToRouteResult("AdminLogin", new RouteValueDictionary());;
+                        filterContext.Result = new RedirectToRouteResult("AdminLogin", new RouteValueDictionary());
 
                     //get allowed IP addresses
                     var ipAddresses = _securitySettings.AdminAreaAllowedIpAddresses;

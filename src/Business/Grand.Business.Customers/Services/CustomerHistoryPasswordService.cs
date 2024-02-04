@@ -1,6 +1,6 @@
 ﻿using Grand.Business.Core.Interfaces.Customers;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure.Extensions;
 using MediatR;
 
@@ -32,8 +32,7 @@ namespace Grand.Business.Customers.Services
                 Password = customer.Password,
                 PasswordFormatId = customer.PasswordFormatId,
                 PasswordSalt = customer.PasswordSalt,
-                CustomerId = customer.Id,
-                CreatedOnUtc = DateTime.UtcNow
+                CustomerId = customer.Id
             };
 
             await _customerHistoryPasswordProductRepository.InsertAsync(chp);

@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Customers.Services;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -29,7 +29,7 @@ namespace Grand.Business.Customers.Tests.Services
             //Act
             await _customerHistoryPasswordService.InsertCustomerPassword(new Customer());
             //Asser
-            Assert.IsTrue(_repository.Table.Count() > 0);
+            Assert.IsTrue(_repository.Table.Any());
         }
 
         [TestMethod()]
@@ -37,13 +37,13 @@ namespace Grand.Business.Customers.Tests.Services
         {
             //Arrange
             //Act
-            await _customerHistoryPasswordService.InsertCustomerPassword(new Customer() {Id = "1" });
-            await _customerHistoryPasswordService.InsertCustomerPassword(new Customer() { Id = "1" });
+            await _customerHistoryPasswordService.InsertCustomerPassword(new Customer {Id = "1" });
+            await _customerHistoryPasswordService.InsertCustomerPassword(new Customer { Id = "1" });
 
             //Act
             var result = await _customerHistoryPasswordService.GetPasswords("1", 1);
             //Asser
-            Assert.IsTrue(result.Count() == 1);
+            Assert.IsTrue(result.Count == 1);
         }
     }
 }

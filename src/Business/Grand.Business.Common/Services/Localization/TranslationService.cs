@@ -1,6 +1,6 @@
 using Grand.Business.Common.Utilities;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Localization;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Caching;
@@ -250,11 +250,9 @@ namespace Grand.Business.Common.Services.Localization
             if (string.IsNullOrEmpty(xml))
                 return;
 
-            var translateResources = new List<TranslationResource>();
-           
             var xmlDoc = LanguageXmlDocument(xml);
 
-            var nodes = xmlDoc.SelectNodes(@"//Language/Resource");
+            var nodes = xmlDoc.SelectNodes("//Language/Resource");
             if (nodes != null)
                 foreach (XmlNode node in nodes)
                 {
@@ -284,18 +282,15 @@ namespace Grand.Business.Common.Services.Localization
                     else
                     {
                         _ = Enum.TryParse(area, out TranslationResourceArea areaEnum);
-
-                        translateResources.Add(new TranslationResource {
+                        await _translationRepository.InsertAsync(new TranslationResource {
                             LanguageId = language.Id,
                             Name = name.ToLowerInvariant(),
                             Value = value,
-                            Area = areaEnum
+                            Area = areaEnum,
+                            CreatedBy = _workContext.CurrentCustomer.Email
                         });
                     }
                 }
-
-            if (translateResources.Any())
-                await _translationRepository.InsertManyAsync(translateResources);
 
             //clear cache
             await _cacheBase.RemoveByPrefix(CacheKey.TRANSLATERESOURCES_PATTERN_KEY);
@@ -318,7 +313,7 @@ namespace Grand.Business.Common.Services.Localization
 
             var translateResources = new List<TranslationResource>();
 
-            var nodes = xmlDoc.SelectNodes(@"//Language/Resource");
+            var nodes = xmlDoc.SelectNodes("//Language/Resource");
             if (nodes != null)
                 foreach (XmlNode node in nodes)
                 {
@@ -334,16 +329,14 @@ namespace Grand.Business.Common.Services.Localization
 
                     _ = Enum.TryParse(area, out TranslationResourceArea areaEnum);
 
-                    translateResources.Add(
-                        new TranslationResource {
-                            LanguageId = language.Id,
-                            Name = name.ToLowerInvariant(),
-                            Value = value,
-                            Area = areaEnum
-                        });
+                    await _translationRepository.InsertAsync(new TranslationResource {
+                        LanguageId = language.Id,
+                        Name = name.ToLowerInvariant(),
+                        Value = value,
+                        Area = areaEnum,
+                        CreatedBy = "System"
+                    });
                 }
-
-            await _translationRepository.InsertManyAsync(translateResources);
 
             //clear cache
             await _cacheBase.RemoveByPrefix(CacheKey.TRANSLATERESOURCES_PATTERN_KEY);

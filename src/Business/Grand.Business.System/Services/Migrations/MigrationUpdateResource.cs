@@ -1,5 +1,5 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Localization;
 using Grand.SharedKernel.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +18,7 @@ namespace Grand.Business.System.Services.Migrations
 
             try
             {
-                var language = langRepository.Table.FirstOrDefault(l => l.Name == "English");
-
-                if (language == null)
-                    language = langRepository.Table.FirstOrDefault();
+                var language = langRepository.Table.FirstOrDefault(l => l.Name == "English") ?? langRepository.Table.FirstOrDefault();
 
                 var filePath = CommonPath.MapPath(filename);
                 var localesXml = File.ReadAllText(filePath);

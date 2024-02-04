@@ -4,8 +4,8 @@ using Grand.Business.Core.Interfaces.Catalog.Prices;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Business.Core.Interfaces.Common.Security;
-using Grand.Domain.Data;
-using Grand.Domain.Data.Mongo;
+using Grand.Data;
+using Grand.Data.Mongo;
 using Grand.Domain.Directory;
 using Grand.Domain.Localization;
 using Grand.Domain.Tax;
@@ -55,9 +55,7 @@ namespace Grand.Business.Catalog.Tests.Services.Prices
                 DisplayLocale = "",
                 CustomFormatting = "€0.00",
                 DisplayOrder = 1,
-                Published = true,
-                CreatedOnUtc = DateTime.UtcNow,
-                UpdatedOnUtc = DateTime.UtcNow
+                Published = true
             };
 
             var currency02 = new Currency {
@@ -67,14 +65,12 @@ namespace Grand.Business.Catalog.Tests.Services.Prices
                 DisplayLocale = "en-US",
                 CustomFormatting = "",
                 DisplayOrder = 2,
-                Published = true,
-                CreatedOnUtc = DateTime.UtcNow,
-                UpdatedOnUtc = DateTime.UtcNow
+                Published = true
             };
 
             var tempCurrencyRepo = new Mock<IRepository<Currency>>();
             {
-                var tempIMongoCollection = new Mock<MongoRepository<Currency>>().Object;
+                var tempIMongoCollection = new Mock<MongoRepository<Currency>>(Mock.Of<IAuditInfoProvider>()).Object;
                 tempIMongoCollection.Insert(currency01);
                 tempIMongoCollection.Insert(currency02);
                 tempCurrencyRepo.Setup(x => x.Table).Returns(tempIMongoCollection.Table);

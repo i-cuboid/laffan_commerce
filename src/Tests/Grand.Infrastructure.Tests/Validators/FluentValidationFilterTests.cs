@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Grand.Infrastructure.Tests.Validators
 {
     [TestClass()]
-    public class FluentValidationFilterTests
+    public class ValidationFilterTests
     {
         [TestMethod()]
         public async Task OnActionExecutionAsyncTest_ValidModel()
@@ -23,10 +23,13 @@ namespace Grand.Infrastructure.Tests.Validators
             services.AddScoped<IValidator<SourceTest>, SourceTestValidator>();
             var serviceProvider = services.BuildServiceProvider();
 
-            var actionFilter = new FluentValidationFilter(serviceProvider);
+            var actionFilter = new ValidationFilter(serviceProvider);
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Method = "POST";
+            var httpContext = new DefaultHttpContext {
+                Request = {
+                    Method = "POST"
+                }
+            };
 
             var actionContext = new ActionContext(httpContext,
                 new RouteData(),
@@ -66,10 +69,13 @@ namespace Grand.Infrastructure.Tests.Validators
             services.AddScoped<IValidator<SourceTest>, SourceTestValidator>();
             var serviceProvider = services.BuildServiceProvider();
 
-            var actionFilter = new FluentValidationFilter(serviceProvider);
+            var actionFilter = new ValidationFilter(serviceProvider);
 
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Method = "POST";
+            var httpContext = new DefaultHttpContext {
+                Request = {
+                    Method = "POST"
+                }
+            };
 
             var actionContext = new ActionContext(httpContext,
                 new RouteData(),

@@ -1,10 +1,9 @@
 ﻿using Grand.Business.Core.Extensions;
 using Grand.Business.Core.Interfaces.Common.Directory;
-using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Interfaces.Customers;
 using Grand.Domain.Common;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -37,7 +36,6 @@ namespace Grand.Web.Common.Filters
             private readonly ICustomerService _customerService;
             private readonly IWorkContext _workContext;
             private readonly IUserFieldService _userFieldService;
-            private readonly ICustomerActivityService _customerActivityService;
             private readonly CustomerSettings _customerSettings;
 
             #endregion
@@ -48,13 +46,11 @@ namespace Grand.Web.Common.Filters
                 ICustomerService customerService,
                 IWorkContext workContext,
                 IUserFieldService userFieldService,
-                ICustomerActivityService customerActivityService,
                 CustomerSettings customerSettings)
             {
                 _customerService = customerService;
                 _workContext = workContext;
                 _userFieldService = userFieldService;
-                _customerActivityService = customerActivityService;
                 _customerSettings = customerSettings;
             }
 
@@ -66,11 +62,10 @@ namespace Grand.Web.Common.Filters
             /// Called before the action executes, after model binding is complete
             /// </summary>
             /// <param name="context">A context for action filters</param>
+            /// <param name="next"></param>
             public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
             {
                 await next();
-                if (context?.HttpContext?.Request == null)
-                    return;
 
                 if (!DataSettingsManager.DatabaseIsInstalled())
                     return;
@@ -80,7 +75,7 @@ namespace Grand.Web.Common.Filters
                     return;
 
                 //update last activity date
-                if (_workContext.CurrentCustomer.LastActivityDateUtc.AddMinutes(1.0) < DateTime.UtcNow)
+                if (_workContext.CurrentCustomer.LastActivityDateUtc.AddMinutes(3.0) < DateTime.UtcNow)
                 {
                     await _customerService.UpdateCustomerField(_workContext.CurrentCustomer, x => x.LastActivityDateUtc, DateTime.UtcNow);
                 }
@@ -116,16 +111,6 @@ namespace Grand.Web.Common.Filters
                     if (previousUrlReferrer != referer)
                     {
                         await _userFieldService.SaveField(_workContext.CurrentCustomer, SystemCustomerFieldNames.LastUrlReferrer, referer);
-                    }
-                }
-
-                if (_customerSettings.SaveVisitedPage)
-                {
-                    if (!_workContext.CurrentCustomer.IsSearchEngineAccount())
-                    {
-                        //activity
-                        _ = _customerActivityService.InsertActivity("PublicStore.Url", pageUrl, _workContext.CurrentCustomer,
-                            context.HttpContext?.Connection?.RemoteIpAddress?.ToString(), pageUrl);
                     }
                 }
             }

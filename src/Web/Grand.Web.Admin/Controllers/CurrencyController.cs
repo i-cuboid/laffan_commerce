@@ -68,7 +68,10 @@ namespace Grand.Web.Admin.Controllers
             await _cacheBase.Clear();
         }
 
-        public IActionResult Index() => RedirectToAction("List");
+        public IActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
 
         [PermissionAuthorizeAction(PermissionActionName.List)]
         public async Task<IActionResult> List(bool liveRates = false)
@@ -140,7 +143,6 @@ namespace Grand.Web.Admin.Controllers
             if (currency != null)
             {
                 currency.Rate = _rate;
-                currency.UpdatedOnUtc = DateTime.UtcNow;
                 await _currencyService.UpdateCurrency(currency);
             }
             return Json(new { result = true });

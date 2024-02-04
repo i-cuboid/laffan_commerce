@@ -1,6 +1,6 @@
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Domain;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.History;
 
 namespace Grand.Business.Common.Services.Directory
@@ -23,7 +23,6 @@ namespace Grand.Business.Common.Services.Directory
                 throw new ArgumentNullException(nameof(entity));
             var history = new HistoryObject
             {
-                CreatedOnUtc = DateTime.UtcNow,
                 Object = entity
             };
             await _historyRepository.InsertAsync(history);

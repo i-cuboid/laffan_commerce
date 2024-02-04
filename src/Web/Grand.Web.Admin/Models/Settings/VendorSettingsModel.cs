@@ -5,12 +5,6 @@ namespace Grand.Web.Admin.Models.Settings
 {
     public class VendorSettingsModel : BaseModel
     {
-
-        public VendorSettingsModel()
-        {
-            AddressSettings = new AddressSettingsModel();
-        }
-
         public string ActiveStore { get; set; }
 
         [GrandResourceDisplayName("Admin.Settings.Vendor.VendorsBlockItemsToDisplay")]
@@ -43,9 +37,6 @@ namespace Grand.Web.Admin.Models.Settings
         [GrandResourceDisplayName("Admin.Settings.Vendor.AllowAnonymousUsersToReviewVendor")]
         public bool AllowAnonymousUsersToReviewVendor { get; set; }
 
-        [GrandResourceDisplayName("Admin.Settings.Vendor.DefaultAdminTheme")]
-        public string DefaultAdminTheme { get; set; }
-
         [GrandResourceDisplayName("Admin.Settings.Vendor.VendorReviewPossibleOnlyAfterPurchasing")]
         public bool VendorReviewPossibleOnlyAfterPurchasing { get; set; }
 
@@ -67,7 +58,7 @@ namespace Grand.Web.Admin.Models.Settings
         [GrandResourceDisplayName("Admin.Settings.Vendor.DefaultVendorPageSizeOptions")]
         public string DefaultVendorPageSizeOptions { get; set; }
 
-        public AddressSettingsModel AddressSettings { get; set; }
+        public AddressSettingsModel AddressSettings { get; set; } = new();
 
         #region Nested classes
 

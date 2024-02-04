@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Core.Commands.Messages.Common;
 using Grand.Business.Messages.Commands.Handlers.Common;
 using Grand.Domain.Common;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Messages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -24,7 +24,7 @@ namespace Grand.Business.Messages.Tests.Commands
         [TestMethod]
         public async Task Handler_InsertEntity()
         {
-            var command = new InsertContactUsCommand() {
+            var command = new InsertContactUsCommand {
                 ContactAttributeDescription = "d",
                 Email = "grand@gmail.com",
                 ContactAttributes = new List<CustomAttribute>()

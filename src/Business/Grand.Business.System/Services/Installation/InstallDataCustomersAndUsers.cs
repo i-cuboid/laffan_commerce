@@ -71,7 +71,6 @@ namespace Grand.Business.System.Services.Installation
                 PasswordFormatId = PasswordFormat.Clear,
                 PasswordSalt = "",
                 Active = true,
-                CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow,
                 PasswordChangeDateUtc = DateTime.UtcNow
             };
@@ -89,16 +88,15 @@ namespace Grand.Business.System.Services.Installation
                 City = "New York",
                 StateProvinceId = country?.StateProvinces.FirstOrDefault(sp => sp.Name == "New York")?.Id,
                 CountryId = country?.Id,
-                ZipPostalCode = "10021",
-                CreatedOnUtc = DateTime.UtcNow
+                ZipPostalCode = "10021"
             };
             adminUser.Addresses.Add(defaultAdminUserAddress);
             adminUser.BillingAddress = defaultAdminUserAddress;
             adminUser.ShippingAddress = defaultAdminUserAddress;
             adminUser.Groups.Add(crAdministrators.Id);
             adminUser.Groups.Add(crRegistered.Id);
-            adminUser.UserFields.Add(new UserField() { Key = SystemCustomerFieldNames.FirstName, Value = "John", StoreId = "" });
-            adminUser.UserFields.Add(new UserField() { Key = SystemCustomerFieldNames.LastName, Value = "Smith", StoreId = "" });
+            adminUser.UserFields.Add(new UserField { Key = SystemCustomerFieldNames.FirstName, Value = "John", StoreId = "" });
+            adminUser.UserFields.Add(new UserField { Key = SystemCustomerFieldNames.LastName, Value = "Smith", StoreId = "" });
             await _customerRepository.InsertAsync(adminUser);
 
             //Anonymous user
@@ -111,7 +109,6 @@ namespace Grand.Business.System.Services.Installation
                 Active = true,
                 IsSystemAccount = true,
                 SystemName = SystemCustomerNames.Anonymous,
-                CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow
             };
             anonymousUser.Groups.Add(crGuests.Id);
@@ -127,7 +124,6 @@ namespace Grand.Business.System.Services.Installation
                 Active = true,
                 IsSystemAccount = true,
                 SystemName = SystemCustomerNames.SearchEngine,
-                CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow
             };
             searchEngineUser.Groups.Add(crGuests.Id);
@@ -144,7 +140,6 @@ namespace Grand.Business.System.Services.Installation
                 Active = true,
                 IsSystemAccount = true,
                 SystemName = SystemCustomerNames.BackgroundTask,
-                CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow
             };
             backgroundTaskUser.Groups.Add(crGuests.Id);

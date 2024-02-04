@@ -1,6 +1,6 @@
 ﻿using Grand.Business.Messages.Queries.Handlers;
 using Grand.Data.Tests.MongoDb;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Vendors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -22,9 +22,9 @@ namespace Grand.Business.Messages.Tests.Queries.Handlers
         public async Task HandleTest()
         {
             //Arrange
-            await _repository.InsertAsync(new Vendor() { Id = "1" });
+            await _repository.InsertAsync(new Vendor { Id = "1" });
             //Act
-            var result = await handler.Handle(new Core.Queries.Messages.GetVendorByIdQuery() { Id = "1" }, CancellationToken.None);
+            var result = await handler.Handle(new Core.Queries.Messages.GetVendorByIdQuery { Id = "1" }, CancellationToken.None);
             //Arrange
             Assert.IsNotNull(result);
         }

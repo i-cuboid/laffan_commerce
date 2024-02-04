@@ -34,10 +34,9 @@ namespace Grand.Business.Catalog.Tests.Services.Products
         public async Task CopyProduct_InserAndReturnNewProduct()
         {
             _langServiceMock.Setup(c => c.GetAllLanguages(It.IsAny<bool>(), It.IsAny<string>())).Returns(Task.FromResult<IList<Language>>(new List<Language>()));
-            var product = new Product() {
+            var product = new Product {
                 Name = "name",
                 Price = 49,
-                CreatedOnUtc = DateTime.UtcNow,
                 ShortDescription = "Desc"
             };
             var copy = await _copyProductService.CopyProduct(product, "copy-product");
@@ -47,7 +46,7 @@ namespace Grand.Business.Catalog.Tests.Services.Products
 
             Assert.AreNotEqual(copy.SeName, product.SeName);
             Assert.AreNotEqual(copy.Id, product.Id);
-            Assert.AreNotEqual(copy.CreatedOnUtc, product.CreatedOnUtc);
+            Assert.AreNotEqual(copy.Name, product.Name);
             _productServiceMock.Verify(c => c.InsertProduct(It.IsAny<Product>()), Times.Once);
         }
     }

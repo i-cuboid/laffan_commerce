@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Catalog.Services.Products;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Catalog;
-using Grand.Domain.Data;
+using Grand.Data;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -28,18 +28,17 @@ namespace Grand.Business.Catalog.Tests.Services.Products
         public async Task GetAllProductReviewsTest()
         {
             //Arrange
-            await _repository.InsertManyAsync(new[] {
-            new ProductReview(){ CustomerId = "1" },
-            new ProductReview(){ CustomerId = "1"},
-            new ProductReview(){ },
-            new ProductReview(){ }
-            });
+            
+            await _repository.InsertAsync(new ProductReview { CustomerId = "1" });
+            await _repository.InsertAsync(new ProductReview { CustomerId = "1"});
+            await _repository.InsertAsync(new ProductReview { });
+            await _repository.InsertAsync(new ProductReview { });
 
             //Act
             var result = await _productReviewService.GetAllProductReviews("1", null);
 
             //Assert
-            Assert.AreEqual(2, result.Count());
+            Assert.AreEqual(2, result.Count);
         }
 
         [TestMethod()]
@@ -55,7 +54,7 @@ namespace Grand.Business.Catalog.Tests.Services.Products
         public async Task UpdateProductReviewTest()
         {
             //Arrange
-            var productReview = new ProductReview() {
+            var productReview = new ProductReview {
                 ReviewText = "test"
             };
             await _productReviewService.InsertProductReview(productReview);
@@ -72,7 +71,7 @@ namespace Grand.Business.Catalog.Tests.Services.Products
         public async Task DeleteProductReviewTest()
         {
             //Arrange
-            var productReview = new ProductReview() {
+            var productReview = new ProductReview {
                 ReviewText = "test"
             };
             await _productReviewService.InsertProductReview(productReview);
@@ -88,7 +87,7 @@ namespace Grand.Business.Catalog.Tests.Services.Products
         public async Task GetProductReviewByIdTest()
         {
             //Arrange
-            var productReview = new ProductReview() {
+            var productReview = new ProductReview {
                 ReviewText = "test"
             };
             await _productReviewService.InsertProductReview(productReview);

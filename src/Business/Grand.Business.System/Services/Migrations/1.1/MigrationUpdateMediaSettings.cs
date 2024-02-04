@@ -1,5 +1,5 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Configuration;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Media;
 using Grand.Infrastructure.Migrations;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +37,7 @@ namespace Grand.Business.System.Services.Migrations._1._1
                     var settingsLogo = JsonSerializer.Deserialize<SettingsMedia>(metadata);
                     if (settingsLogo != null)
                     {
-                        settingService.SaveSetting<StorageSettings>(new StorageSettings() { PictureStoreInDb = settingsLogo.StoreInDb }, "").GetAwaiter().GetResult();
+                        settingService.SaveSetting<StorageSettings>(new StorageSettings { PictureStoreInDb = settingsLogo.StoreInDb }, "").GetAwaiter().GetResult();
                     }
                 }
             }

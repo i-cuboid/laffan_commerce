@@ -2,7 +2,6 @@
 using Grand.Business.Core.Commands.Checkout.Orders;
 using Grand.Business.Core.Interfaces.Checkout.Orders;
 using Grand.Business.Core.Interfaces.Checkout.Payments;
-using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Queries.Checkout.Orders;
 using Grand.Domain.Payments;
 using MediatR;
@@ -39,7 +38,7 @@ namespace Grand.Business.Checkout.Tests.Commands.Handlers.Orders
         public async Task HandleTest()
         {
             //Arrange
-            var command = new CaptureCommand() { PaymentTransaction = new PaymentTransaction() };
+            var command = new CaptureCommand { PaymentTransaction = new PaymentTransaction() };
             _mediatorMock.Setup(x => x.Send(It.IsAny<CanCaptureQuery>(), default))
                 .Returns(Task.FromResult(true));
 

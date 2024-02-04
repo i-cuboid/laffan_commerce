@@ -1,5 +1,4 @@
-﻿using Grand.Domain.Common;
-using Grand.Domain.Data;
+﻿using Grand.Data;
 using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Endpoints;
 using Grand.Infrastructure.Plugins;
@@ -11,7 +10,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
@@ -105,12 +103,6 @@ namespace Grand.Web.Common.Infrastructure
                         const string location = "/page-not-found";
                         context.HttpContext.Response.Redirect(context.HttpContext.Request.PathBase + location);
                     }
-                    var commonSettings = context.HttpContext.RequestServices.GetRequiredService<CommonSettings>();
-                    if (commonSettings.Log404Errors)
-                    {
-                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("UseStatusCodePages");
-                        logger.LogError("Error 404. The requested page ({DisplayUrl}) was not found", context.HttpContext.Request.GetDisplayUrl());
-                    }
                 }
                 await Task.CompletedTask;
             });
@@ -195,18 +187,6 @@ namespace Grand.Web.Common.Infrastructure
 
             });
 
-            //themes
-            if (Directory.Exists(CommonPath.ThemePath))
-                application.UseStaticFiles(new StaticFileOptions {
-                    FileProvider = new PhysicalFileProvider(CommonPath.ThemePath),
-                    RequestPath = new PathString("/Themes"),
-                    OnPrepareResponse = ctx =>
-                    {
-                        if (!string.IsNullOrEmpty(appConfig.StaticFilesCacheControl))
-                            ctx.Context.Response.Headers.Append(HeaderNames.CacheControl, appConfig.StaticFilesCacheControl);
-                    }
-                });
-
             //plugins
             if (Directory.Exists(CommonPath.PluginsPath))
                 application.UseStaticFiles(new StaticFileOptions {
@@ -220,25 +200,7 @@ namespace Grand.Web.Common.Infrastructure
                 });
 
         }
-
-        /// <summary>
-        /// Create and configure MiniProfiler service
-        /// </summary>
-        /// <param name="application">Builder for configuring an application's request pipeline</param>
-        public static void UseProfiler(this IApplicationBuilder application)
-        {
-            //whether database is already installed
-            if (!DataSettingsManager.DatabaseIsInstalled())
-                return;
-
-            var performanceConfig = application.ApplicationServices.GetRequiredService<PerformanceConfig>();
-            //whether MiniProfiler should be displayed
-            if (performanceConfig.DisplayMiniProfilerInPublicStore)
-            {
-                application.UseMiniProfiler();
-            }
-        }
-
+        
         /// <summary>
         /// Configure UseForwardedHeaders
         /// </summary>

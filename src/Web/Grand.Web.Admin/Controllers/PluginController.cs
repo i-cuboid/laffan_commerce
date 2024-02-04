@@ -10,7 +10,6 @@ using Grand.Web.Admin.Models.Plugins;
 using Grand.Web.Common.DataSource;
 using Grand.Web.Common.Extensions;
 using Grand.Web.Common.Security.Authorization;
-using Grand.Web.Common.Themes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
@@ -21,38 +20,20 @@ using System.Reflection;
 namespace Grand.Web.Admin.Controllers
 {
     [PermissionAuthorize(PermissionSystemName.Plugins)]
-    public class PluginController : BaseAdminController
+    public class PluginController(
+        ITranslationService translationService,
+        ILogger<PluginController> logger,
+        IHostApplicationLifetime applicationLifetime,
+        IWorkContext workContext,
+        IServiceProvider serviceProvider,
+        ExtensionsConfig extConfig)
+        : BaseAdminController
     {
         #region Fields
 
-        private readonly ITranslationService _translationService;
-        private readonly IThemeProvider _themeProvider;
-        private readonly ILogger<PluginController> _logger;
-        private readonly IHostApplicationLifetime _applicationLifetime;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IWorkContext _workContext;
-        private readonly ExtensionsConfig _extConfig;
         #endregion
 
         #region Constructors
-
-        public PluginController(
-            ITranslationService translationService,
-            IThemeProvider themeProvider,
-            ILogger<PluginController> logger,
-            IHostApplicationLifetime applicationLifetime,
-            IWorkContext workContext,
-            IServiceProvider serviceProvider,
-            ExtensionsConfig extConfig)
-        {
-            _translationService = translationService;
-            _themeProvider = themeProvider;
-            _logger = logger;
-            _workContext = workContext;
-            _applicationLifetime = applicationLifetime;
-            _serviceProvider = serviceProvider;
-            _extConfig = extConfig;
-        }
 
         #endregion
 
@@ -63,14 +44,15 @@ namespace Grand.Web.Admin.Controllers
         {
             var pluginModel = PluginInfo.ToModel();
             //logo
-            pluginModel.LogoUrl = PluginInfo.GetLogoUrl(_workContext);
+            pluginModel.LogoUrl = PluginInfo.GetLogoUrl(workContext);
 
             //configuration URLs
             if (PluginInfo.Installed)
             {
-                var pluginInstance = PluginInfo.Instance(_serviceProvider);
+                var pluginInstance = PluginInfo.Instance(serviceProvider);
                 pluginModel.ConfigurationUrl = pluginInstance.ConfigurationUrl();
             }
+
             return pluginModel;
         }
 
@@ -116,16 +98,19 @@ namespace Grand.Web.Admin.Controllers
                 }
             }
         }
+
         #endregion
 
         #region Methods
 
-        public IActionResult Index() => RedirectToAction("List");
+        public IActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
 
         public IActionResult List()
         {
-            var model = new PluginListModel
-            {
+            var model = new PluginListModel {
                 //load modes
                 AvailableLoadModes = LoadPluginsStatus.All.ToSelectList(HttpContext, false).ToList()
             };
@@ -153,8 +138,8 @@ namespace Grand.Web.Admin.Controllers
             {
                 items.Add(PreparePluginModel(item));
             }
-            var gridModel = new DataSourceResult
-            {
+
+            var gridModel = new DataSourceResult {
                 Data = items,
                 Total = pluginInfos.Count
             };
@@ -176,20 +161,22 @@ namespace Grand.Web.Admin.Controllers
                     Error("You can't install unsupported version of plugin");
                     return RedirectToAction("List");
                 }
+
                 //check whether plugin is not installed
                 if (pluginInfo.Installed)
                     return RedirectToAction("List");
 
                 //install plugin
-                var plugin = pluginInfo.Instance<IPlugin>(_serviceProvider);
+                var plugin = pluginInfo.Instance<IPlugin>(serviceProvider);
                 await plugin.Install();
 
-                Success(_translationService.GetResource("Admin.Plugins.Installed"));
+                Success(translationService.GetResource("Admin.Plugins.Installed"));
 
-                _logger.LogInformation("The plugin has been installed by the user {CurrentCustomerEmail}", _workContext.CurrentCustomer.Email);
+                logger.LogInformation("The plugin has been installed by the user {CurrentCustomerEmail}",
+                    workContext.CurrentCustomer.Email);
 
                 //stop application
-                _applicationLifetime.StopApplication();
+                applicationLifetime.StopApplication();
             }
             catch (Exception exc)
             {
@@ -214,15 +201,16 @@ namespace Grand.Web.Admin.Controllers
                     return RedirectToAction("List");
 
                 //uninstall plugin
-                var plugin = pluginInfo.Instance<IPlugin>(_serviceProvider);
+                var plugin = pluginInfo.Instance<IPlugin>(serviceProvider);
                 await plugin.Uninstall();
 
-                Success(_translationService.GetResource("Admin.Plugins.Uninstalled"));
+                Success(translationService.GetResource("Admin.Plugins.Uninstalled"));
 
-                _logger.LogInformation("The plugin has been uninstalled by the user {CurrentCustomerEmail}", _workContext.CurrentCustomer.Email);
+                logger.LogInformation("The plugin has been uninstalled by the user {CurrentCustomerEmail}",
+                    workContext.CurrentCustomer.Email);
 
                 //stop application
-                _applicationLifetime.StopApplication();
+                applicationLifetime.StopApplication();
             }
             catch (Exception exc)
             {
@@ -235,9 +223,9 @@ namespace Grand.Web.Admin.Controllers
         [HttpPost]
         public IActionResult Remove(string systemName)
         {
-            if (_extConfig.DisableUploadExtensions)
+            if (extConfig.DisableUploadExtensions)
             {
-                Error("Upload plugins/themes is disable");
+                Error("Upload plugins is disable");
                 return RedirectToAction("List");
             }
 
@@ -252,19 +240,21 @@ namespace Grand.Web.Admin.Controllers
 
                 foreach (var folder in Directory.GetDirectories(pluginsPath))
                 {
-                    if (Path.GetFileName(folder) != "bin" && Directory.GetFiles(folder).Select(x => Path.GetFileName(x)).Contains(pluginInfo.PluginFileName))
+                    if (Path.GetFileName(folder) != "bin" && Directory.GetFiles(folder).Select(x => Path.GetFileName(x))
+                            .Contains(pluginInfo.PluginFileName))
                     {
                         DeleteDirectory(folder);
                     }
                 }
 
                 //uninstall plugin
-                Success(_translationService.GetResource("Admin.Plugins.Removed"));
+                Success(translationService.GetResource("Admin.Plugins.Removed"));
 
-                _logger.LogInformation("The plugin has been removed by the user {CurrentCustomerEmail}", _workContext.CurrentCustomer.Email);
+                logger.LogInformation("The plugin has been removed by the user {CurrentCustomerEmail}",
+                    workContext.CurrentCustomer.Email);
 
                 //stop application
-                _applicationLifetime.StopApplication();
+                applicationLifetime.StopApplication();
             }
             catch (Exception exc)
             {
@@ -276,10 +266,11 @@ namespace Grand.Web.Admin.Controllers
 
         public IActionResult ReloadList()
         {
-            _logger.LogInformation("Reload list of plugins by the user {CurrentCustomerEmail}", _workContext.CurrentCustomer.Email);
+            logger.LogInformation("Reload list of plugins by the user {CurrentCustomerEmail}",
+                workContext.CurrentCustomer.Email);
 
             //stop application
-            _applicationLifetime.StopApplication();
+            applicationLifetime.StopApplication();
             return RedirectToAction("List");
         }
 
@@ -287,21 +278,22 @@ namespace Grand.Web.Admin.Controllers
         [HttpPost]
         public IActionResult UploadPlugin(IFormFile zippedFile)
         {
-            if(_extConfig.DisableUploadExtensions)
+            if (extConfig.DisableUploadExtensions)
             {
-                Error("Upload plugins/themes is disable");
+                Error("Upload plugins is disable");
                 return RedirectToAction("List");
             }
+
             if (zippedFile == null || zippedFile.Length == 0)
             {
-                Error(_translationService.GetResource("Admin.Common.UploadFile"));
+                Error(translationService.GetResource("Admin.Common.UploadFile"));
                 return RedirectToAction("List");
             }
 
             var zipFilePath = "";
             try
             {
-                if (!Path.GetExtension(zippedFile.FileName)?.Equals(".zip", StringComparison.InvariantCultureIgnoreCase) ?? true)
+                if (!Path.GetExtension(zippedFile.FileName).Equals(".zip", StringComparison.InvariantCultureIgnoreCase))
                     throw new Exception("Only zip archives are supported");
 
                 //ensure that temp directory is created
@@ -315,7 +307,7 @@ namespace Grand.Web.Admin.Controllers
 
                 Upload(zipFilePath);
 
-                var message = _translationService.GetResource("Admin.Plugins.Uploaded");
+                var message = translationService.GetResource("Admin.Plugins.Uploaded");
                 Success(message);
             }
             finally
@@ -325,152 +317,87 @@ namespace Grand.Web.Admin.Controllers
                     System.IO.File.Delete(zipFilePath);
             }
 
-            _logger.LogInformation("The plugin has been uploaded by the user {CurrentCustomerEmail}", _workContext.CurrentCustomer.Email);
+            logger.LogInformation("The plugin has been uploaded by the user {CurrentCustomerEmail}",
+                workContext.CurrentCustomer.Email);
 
             //stop application
-            _applicationLifetime.StopApplication();
+            applicationLifetime.StopApplication();
 
             return RedirectToAction("List");
-        }
-
-        [HttpPost]
-        public IActionResult UploadTheme(IFormFile zippedFile)
-        {
-            if (_extConfig.DisableUploadExtensions)
-            {
-                Error("Upload plugins/themes is disable");
-                return RedirectToAction("GeneralCommon", "Setting");
-            }
-
-            if (zippedFile == null || zippedFile.Length == 0)
-            {
-                Error(_translationService.GetResource("Admin.Common.UploadFile"));
-                return RedirectToAction("GeneralCommon", "Setting");
-            }
-
-            var zipFilePath = "";
-
-            try
-            {
-                if (!Path.GetExtension(zippedFile.FileName)?.Equals(".zip", StringComparison.InvariantCultureIgnoreCase) ?? true)
-                    throw new Exception("Only zip archives are supported");
-
-                //ensure that temp directory is created
-                var tempDirectory = CommonPath.TmpUploadPath;
-                Directory.CreateDirectory(new DirectoryInfo(tempDirectory).FullName);
-
-                //copy original archive to the temp directory
-                zipFilePath = Path.Combine(tempDirectory, zippedFile.FileName);
-                using (var fileStream = new FileStream(zipFilePath, FileMode.Create))
-                    zippedFile.CopyTo(fileStream);
-
-                Upload(zipFilePath);
-
-                var message = _translationService.GetResource("Admin.Configuration.Themes.Uploaded");
-                Success(message);
-            }
-            catch (Exception ex)
-            {
-                var message = _translationService.GetResource("Admin.Configuration.Themes.Failed");
-                Error(message + "\r\n" + ex.Message);
-            }
-            finally
-            {
-                //delete temporary file
-                if (!string.IsNullOrEmpty(zipFilePath))
-                    System.IO.File.Delete(zipFilePath);
-            }
-
-            return RedirectToAction("GeneralCommon", "Setting");
         }
 
         private void Upload(string archivePath)
         {
             var pluginsDirectory = CommonPath.PluginsPath;
-            var themesDirectory = CommonPath.ThemePath;
-
             var uploadedItemDirectoryName = "";
             PluginInfo _pluginInfo = null;
-            ThemeInfo _themeInfo = null;
             using (var archive = ZipFile.Open(archivePath, ZipArchiveMode.Update))
             {
-                var rootDirectories = archive.Entries.Where(entry => entry.FullName.Count(ch => ch == '/') == 1 && entry.FullName.EndsWith("/")).ToList();
+                var rootDirectories = archive.Entries.Where(entry =>
+                    entry.FullName.Count(ch => ch == '/') == 1 && entry.FullName.EndsWith("/")).ToList();
                 if (rootDirectories.Count != 1)
                 {
-                    throw new Exception($"The archive should contain only one root plugin or theme directory. " +
-                        $"For example, Payments.PayPalDirect or DefaultClean. ");
+                    throw new Exception(
+                        "The archive should contain only one root plugin. For example, Payments.StripeCheckout.");
                 }
 
                 //get directory name (remove the ending /)
                 uploadedItemDirectoryName = rootDirectories.First().FullName.TrimEnd('/');
 
-                var themeDescriptorEntry = archive.Entries.FirstOrDefault(x => x.FullName.Contains("theme.cfg"));
-                if (themeDescriptorEntry != null)
+                var supportedVersion = false;
+                var _fpath = "";
+                foreach (var entry in archive.Entries.Where(x => x.FullName.Contains(".dll")))
                 {
-                    using var unzippedEntryStream = themeDescriptorEntry.Open();
-                    using var reader = new StreamReader(unzippedEntryStream);
-                    _themeInfo = _themeProvider.GetThemeDescriptorFromText(reader.ReadToEnd());
+                    using var unzippedEntryStream = entry.Open();
+                    try
+                    {
+                        var assembly = Assembly.Load(ToByteArray(unzippedEntryStream));
+                        var pluginInfo = assembly.GetCustomAttribute<PluginInfoAttribute>();
+                        if (pluginInfo != null && pluginInfo.SupportedVersion == GrandVersion.SupportedPluginVersion)
+                        {
+                            supportedVersion = true;
+                            _fpath = entry.FullName[..entry.FullName.LastIndexOf("/", StringComparison.Ordinal)];
+                            archive.Entries.Where(x => !x.FullName.Contains(_fpath)).ToList()
+                                .ForEach(y => { archive.GetEntry(y.FullName)!.Delete(); });
+
+                            _pluginInfo = new PluginInfo();
+                            break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, ex.Message);
+                    }
                 }
-                else
+
+                if (!supportedVersion)
+                    throw new Exception(
+                        $"This plugin doesn't support the current version - {GrandVersion.SupportedPluginVersion}");
+
+                var pluginname = _fpath[(_fpath.LastIndexOf('/') + 1)..];
+                var _path = "";
+
+                var entries = archive.Entries.ToArray();
+                foreach (var y in entries)
                 {
-                    var supportedVersion = false;
-                    var _fpath = "";
-                    foreach (var entry in archive.Entries.Where(x => x.FullName.Contains(".dll")))
-                    {
-                        using var unzippedEntryStream = entry.Open();
-                        try
-                        {
-                            var assembly = Assembly.Load(ToByteArray(unzippedEntryStream));
-                            var pluginInfo = assembly.GetCustomAttribute<PluginInfoAttribute>();
-                            if (pluginInfo != null && pluginInfo.SupportedVersion == GrandVersion.SupportedPluginVersion)
-                            {
-                                supportedVersion = true;
-                                _fpath = entry.FullName[..entry.FullName.LastIndexOf("/", StringComparison.Ordinal)];
-                                archive.Entries.Where(x => !x.FullName.Contains(_fpath)).ToList()
-                                    .ForEach(y => { archive.GetEntry(y.FullName)!.Delete(); });
+                    _path = y.Name.Length > 0 ? y.FullName.Replace(y.Name, "").Replace(_fpath, pluginname).TrimEnd('/') : y.FullName.Replace(_fpath, pluginname);
 
-                                _pluginInfo = new PluginInfo();
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, ex.Message);
-                        }
-                    }
-                    if (!supportedVersion)
-                        throw new Exception($"This plugin doesn't support the current version - {GrandVersion.SupportedPluginVersion}");
-                    
-                    var pluginname = _fpath[(_fpath.LastIndexOf('/') + 1)..];
-                    var _path = "";
+                    var entry = archive.CreateEntry($"{_path}/{y.Name}");
+                    using (var a = y.Open())
+                    using (var b = entry.Open())
+                        a.CopyTo(b);
 
-                    var entries = archive.Entries.ToArray();
-                    foreach (var y in entries)
-                    {
-                        if (y.Name.Length > 0)
-                            _path = y.FullName.Replace(y.Name, "").Replace(_fpath, pluginname).TrimEnd('/');
-                        else
-                            _path = y.FullName.Replace(_fpath, pluginname);
-
-                        var _entry = archive.CreateEntry($"{_path}/{y.Name}");
-                        using (var a = y.Open())
-                        using (var b = _entry.Open())
-                            a.CopyTo(b);
-
-                        archive.GetEntry(y.FullName).Delete();
-
-                    }
+                    archive.GetEntry(y.FullName).Delete();
                 }
             }
 
-            if (_pluginInfo == null && _themeInfo == null)
+            if (_pluginInfo == null)
                 throw new Exception("No info file is found.");
 
             if (string.IsNullOrEmpty(uploadedItemDirectoryName))
-                throw new Exception($"Cannot get the {(_pluginInfo != null ? "plugin" : "theme")} directory name");
+                throw new Exception("Cannot get the plugin directory name");
 
-            var directoryPath = _pluginInfo != null ? pluginsDirectory : themesDirectory;
-            var pathToUpload = Path.Combine(directoryPath, uploadedItemDirectoryName);
+            var pathToUpload = Path.Combine(pluginsDirectory, uploadedItemDirectoryName);
 
             try
             {
@@ -479,7 +406,7 @@ namespace Grand.Web.Admin.Controllers
             }
             catch { }
 
-            ZipFile.ExtractToDirectory(archivePath, directoryPath);
+            ZipFile.ExtractToDirectory(archivePath, pluginsDirectory);
         }
 
         #endregion

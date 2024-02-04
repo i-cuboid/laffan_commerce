@@ -58,7 +58,10 @@ namespace Grand.Web.Admin.Controllers
         #region Discounts
 
         //list
-        public IActionResult Index() => RedirectToAction("List");
+        public IActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
 
         public IActionResult List()
         {
@@ -99,7 +102,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 var discount = await _discountViewModelService.InsertDiscountModel(model);
@@ -157,7 +160,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
                 discount = await _discountViewModelService.UpdateDiscountModel(discount, model);
                 Success(_translationService.GetResource("admin.marketing.discounts.Updated"));
@@ -284,7 +287,7 @@ namespace Grand.Web.Admin.Controllers
         public async Task<IActionResult> GetDiscountRequirementConfigurationUrl(string rulesystemName, string discountId, string discountRequirementId)
         {
             if (string.IsNullOrEmpty(rulesystemName))
-                throw new ArgumentNullException("rulesystemName");
+                throw new ArgumentNullException(nameof(rulesystemName));
 
             var discountPlugin = _discountService.LoadDiscountProviderByRuleSystemName(rulesystemName);
 

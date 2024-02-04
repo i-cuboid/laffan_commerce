@@ -82,7 +82,10 @@ namespace Grand.Web.Admin.Controllers
 
         #region List
 
-        public IActionResult Index() => RedirectToAction("List");
+        public IActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
 
         public async Task<IActionResult> List()
         {
@@ -146,7 +149,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 var collection = await _collectionViewModelService.InsertCollectionModel(model);
@@ -224,7 +227,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
                 collection = await _collectionViewModelService.UpdateCollectionModel(collection, model);
                 Success(_translationService.GetResource("Admin.Catalog.Collections.Updated"));
@@ -462,25 +465,6 @@ namespace Grand.Web.Admin.Controllers
         }
         #endregion
 
-        #region Activity log
-
-        [PermissionAuthorizeAction(PermissionActionName.Preview)]
-        [HttpPost]
-        public async Task<IActionResult> ListActivityLog(DataSourceRequest command, string collectionId)
-        {
-            var collection = await _collectionService.GetCollectionById(collectionId);
-            var permission = await CheckAccessToCollection(collection);
-            if (!permission.allow)
-                return ErrorForKendoGridJson(permission.message);
-
-            var (activityLogModels, totalCount) = await _collectionViewModelService.PrepareActivityLogModel(collectionId, command.Page, command.PageSize);
-            var gridModel = new DataSourceResult {
-                Data = activityLogModels.ToList(),
-                Total = totalCount
-            };
-            return Json(gridModel);
-        }
-        #endregion
     }
 
 }

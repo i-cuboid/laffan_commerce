@@ -4,7 +4,6 @@ using Grand.Business.Core.Interfaces.Checkout.Orders;
 using Grand.Business.Core.Interfaces.Common.Addresses;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Interfaces.Customers;
 using Grand.Business.Core.Interfaces.Messages;
 using Grand.Web.Common.Extensions;
@@ -18,7 +17,6 @@ using Grand.Web.Vendor.Interfaces;
 using Grand.Web.Vendor.Models.Common;
 using Grand.Web.Vendor.Models.MerchandiseReturn;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Http;
 
 namespace Grand.Web.Vendor.Services
 {
@@ -34,7 +32,6 @@ namespace Grand.Web.Vendor.Services
         private readonly ITranslationService _translationService;
         private readonly IMessageProviderService _messageProviderService;
         private readonly LanguageSettings _languageSettings;
-        private readonly ICustomerActivityService _customerActivityService;
         private readonly IMerchandiseReturnService _merchandiseReturnService;
         private readonly IPriceFormatter _priceFormatter;
         private readonly AddressSettings _addressSettings;
@@ -42,27 +39,27 @@ namespace Grand.Web.Vendor.Services
         private readonly ICountryService _countryService;
         private readonly IAddressAttributeService _addressAttributeService;
         private readonly IAddressAttributeParser _addressAttributeParser;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        #endregion Fields
+        #endregion Fields
 
         #region Constructors
 
-        public MerchandiseReturnViewModelService(IOrderService orderService,
+        public MerchandiseReturnViewModelService(
+            IOrderService orderService,
             IWorkContext workContext,
             IProductService productService,
-            ICustomerService customerService, IDateTimeService dateTimeService,
+            ICustomerService customerService, 
+            IDateTimeService dateTimeService,
             ITranslationService translationService,
-            IMessageProviderService messageProviderService, LanguageSettings languageSettings,
-            ICustomerActivityService customerActivityService,
+            IMessageProviderService messageProviderService, 
+            LanguageSettings languageSettings,
             IMerchandiseReturnService merchandiseReturnService,
             IPriceFormatter priceFormatter,
             AddressSettings addressSettings,
             ICountryService countryService,
             IAddressAttributeService addressAttributeService,
             IAddressAttributeParser addressAttributeParser,
-            OrderSettings orderSettings,
-            IHttpContextAccessor httpContextAccessor)
+            OrderSettings orderSettings)
         {
             _orderService = orderService;
             _workContext = workContext;
@@ -72,7 +69,6 @@ namespace Grand.Web.Vendor.Services
             _translationService = translationService;
             _messageProviderService = messageProviderService;
             _languageSettings = languageSettings;
-            _customerActivityService = customerActivityService;
             _merchandiseReturnService = merchandiseReturnService;
             _priceFormatter = priceFormatter;
             _addressSettings = addressSettings;
@@ -80,7 +76,6 @@ namespace Grand.Web.Vendor.Services
             _addressAttributeService = addressAttributeService;
             _addressAttributeParser = addressAttributeParser;
             _orderSettings = orderSettings;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         #endregion
@@ -264,7 +259,6 @@ namespace Grand.Web.Vendor.Services
             merchandiseReturn.StaffNotes = model.StaffNotes;
             merchandiseReturn.MerchandiseReturnStatusId = model.MerchandiseReturnStatusId;
             merchandiseReturn.ExternalId = model.ExternalId;
-            merchandiseReturn.UpdatedOnUtc = DateTime.UtcNow;
             merchandiseReturn.UserFields = model.UserFields;
 
             if (_orderSettings.MerchandiseReturns_AllowToSpecifyPickupDate)
@@ -277,11 +271,6 @@ namespace Grand.Web.Vendor.Services
             }
             merchandiseReturn.NotifyCustomer = model.NotifyCustomer;
             await _merchandiseReturnService.UpdateMerchandiseReturn(merchandiseReturn);
-            //activity log
-            _ = _customerActivityService.InsertActivity("EditMerchandiseReturn", merchandiseReturn.Id,
-                _workContext.CurrentCustomer, _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString(),
-                _translationService.GetResource("ActivityLog.EditMerchandiseReturn"), merchandiseReturn.Id);
-
             if (model.NotifyCustomer)
                 await NotifyCustomer(merchandiseReturn);
             return merchandiseReturn;
@@ -289,10 +278,6 @@ namespace Grand.Web.Vendor.Services
         public virtual async Task DeleteMerchandiseReturn(MerchandiseReturn merchandiseReturn)
         {
             await _merchandiseReturnService.DeleteMerchandiseReturn(merchandiseReturn);
-            //activity log
-            _ = _customerActivityService.InsertActivity("DeleteMerchandiseReturn", merchandiseReturn.Id,
-                _workContext.CurrentCustomer, _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString(),
-                _translationService.GetResource("ActivityLog.DeleteMerchandiseReturn"), merchandiseReturn.Id);
         }
 
         public virtual async Task<IList<MerchandiseReturnModel.MerchandiseReturnNote>> PrepareMerchandiseReturnNotes(MerchandiseReturn merchandiseReturn)
@@ -321,8 +306,7 @@ namespace Grand.Web.Vendor.Services
             {
                 DisplayToCustomer = displayToCustomer,
                 Note = message,
-                MerchandiseReturnId = merchandiseReturn.Id,
-                CreatedOnUtc = DateTime.UtcNow
+                MerchandiseReturnId = merchandiseReturn.Id
             };
             await _merchandiseReturnService.InsertMerchandiseReturnNote(merchandiseReturnNote);
 

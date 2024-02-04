@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Marketing.Services.Courses;
 using Grand.Data.Tests.MongoDb;
 using Grand.Domain.Courses;
-using Grand.Domain.Data;
+using Grand.Data;
 using MediatR;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -27,7 +27,7 @@ namespace Grand.Business.Marketing.Tests.Services.Courses
         public async Task DeleteTest()
         {
             //Arrange
-            var courseSubject = new CourseSubject() {
+            var courseSubject = new CourseSubject {
                 Name = "test"
             };
             await _courseSubjectService.Insert(courseSubject);
@@ -44,7 +44,7 @@ namespace Grand.Business.Marketing.Tests.Services.Courses
         public async Task GetByCourseIdTest()
         {
             //Arrange
-            var courseSubject = new CourseSubject() {
+            var courseSubject = new CourseSubject {
                 Name = "test",
                 CourseId = "1"
             };
@@ -62,7 +62,7 @@ namespace Grand.Business.Marketing.Tests.Services.Courses
         public async Task GetByIdTest()
         {
             //Arrange
-            var courseSubject = new CourseSubject() {
+            var courseSubject = new CourseSubject {
                 Name = "test"
             };
             await _courseSubjectService.Insert(courseSubject);
@@ -79,7 +79,7 @@ namespace Grand.Business.Marketing.Tests.Services.Courses
         public async Task InsertTest()
         {
             //Act
-            var courseSubject = new CourseSubject() {
+            var courseSubject = new CourseSubject {
                 Name = "test"
             };
             await _courseSubjectService.Insert(courseSubject);
@@ -92,7 +92,7 @@ namespace Grand.Business.Marketing.Tests.Services.Courses
         public async Task UpdateTest()
         {
             //Arrange
-            var courseSubject = new CourseSubject() {
+            var courseSubject = new CourseSubject {
                 Name = "test"
             };
             await _courseSubjectService.Insert(courseSubject);

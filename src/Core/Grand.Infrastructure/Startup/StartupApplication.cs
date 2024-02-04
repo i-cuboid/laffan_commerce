@@ -1,6 +1,6 @@
-﻿using Grand.Domain.Data;
-using Grand.Domain.Data.LiteDb;
-using Grand.Domain.Data.Mongo;
+﻿using Grand.Data;
+using Grand.Data.LiteDb;
+using Grand.Data.Mongo;
 using Grand.Infrastructure.Configuration;
 using LiteDB;
 using Microsoft.AspNetCore.Builder;
@@ -30,6 +30,8 @@ namespace Grand.Infrastructure.Startup
 
         private void RegisterDataLayer(IServiceCollection serviceCollection, IConfiguration configuration)
         {
+            serviceCollection.AddSingleton<IAuditInfoProvider, AuditInfoProvider>();
+
             var dbConfig = new DatabaseConfig();
             configuration.GetSection("Database").Bind(dbConfig);
 

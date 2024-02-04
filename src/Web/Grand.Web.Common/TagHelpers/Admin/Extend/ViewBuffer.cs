@@ -157,9 +157,10 @@ namespace Grand.Web.Common.TagHelpers.Admin.Extend
             }
             else if (_currentPage != null)
             {
-                _multiplePages = new List<ViewBufferPage>(2);
-                _multiplePages.Add(_currentPage);
-                _multiplePages.Add(page);
+                _multiplePages = [
+                    _currentPage,
+                    page
+                ];
             }
 
             _currentPage = page;
@@ -255,7 +256,10 @@ namespace Grand.Web.Common.TagHelpers.Admin.Extend
             }
         }
 
-        private string DebuggerToString() => _name;
+        private string DebuggerToString()
+        {
+            return _name;
+        }
 
         public void CopyTo(IHtmlContentBuilder destination)
         {

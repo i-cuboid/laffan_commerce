@@ -57,7 +57,10 @@ namespace Grand.Web.Admin.Controllers
 
         #region Level
 
-        public IActionResult Level() => View();
+        public IActionResult Level()
+        {
+            return View();
+        }
 
         [PermissionAuthorizeAction(PermissionActionName.List)]
         [HttpPost]
@@ -123,7 +126,10 @@ namespace Grand.Web.Admin.Controllers
 
         #region Course
 
-        public IActionResult List() => View();
+        public IActionResult List()
+        {
+            return View();
+        }
 
         [PermissionAuthorizeAction(PermissionActionName.List)]
         [HttpPost]
@@ -157,7 +163,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 var course = await _courseViewModelService.InsertCourseModel(model);
@@ -227,7 +233,7 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (await _groupService.IsStaff(_workContext.CurrentCustomer))
                 {
-                    model.Stores = new[] { _workContext.CurrentCustomer.StaffStoreId };
+                    model.Stores = [_workContext.CurrentCustomer.StaffStoreId];
                 }
 
                 course = await _courseViewModelService.UpdateCourseModel(course, model);

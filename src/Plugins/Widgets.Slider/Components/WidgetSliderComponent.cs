@@ -1,7 +1,6 @@
 ﻿using Grand.Business.Core.Extensions;
 using Grand.Business.Core.Interfaces.Storage;
 using Grand.Infrastructure;
-using Grand.Web.Common.Components;
 using Microsoft.AspNetCore.Mvc;
 using Widgets.Slider.Domain;
 using Widgets.Slider.Models;
@@ -41,7 +40,7 @@ namespace Widgets.Slider.Components
                 if ((item.StartDateUtc.HasValue && item.StartDateUtc > DateTime.UtcNow) || (item.EndDateUtc.HasValue && item.EndDateUtc < DateTime.UtcNow))
                     continue;
 
-                model.Slide.Add(new PublicInfoModel.Slider() {
+                model.Slide.Add(new PublicInfoModel.Slider {
                     Link = item.Link,
                     PictureUrl = await GetPictureUrl(item.PictureId),
                     Name = item.GetTranslation(x => x.Name, _workContext.WorkingLanguage.Id),
@@ -81,7 +80,7 @@ namespace Widgets.Slider.Components
             if (!model.Slide.Any())
                 return Content("");
 
-            return View(this.GetViewPath(), model);
+            return View(model);
         }
     }
 }

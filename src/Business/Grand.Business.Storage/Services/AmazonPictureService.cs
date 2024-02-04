@@ -3,7 +3,7 @@ using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Grand.Business.Core.Interfaces.Storage;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Media;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Configuration;
@@ -126,7 +126,7 @@ namespace Grand.Business.Storage.Services
         {
             await CheckBucketExists();
 
-            var listObjectsRequest = new ListObjectsV2Request() {
+            var listObjectsRequest = new ListObjectsV2Request {
                 BucketName = _bucketName,
                 Prefix = picture.Id
             };
@@ -196,7 +196,7 @@ namespace Grand.Business.Storage.Services
 
             using (Stream stream = new MemoryStream(binary))
             {
-                var putObjectRequest = new PutObjectRequest() {
+                var putObjectRequest = new PutObjectRequest {
                     BucketName = _bucketName,
                     InputStream = stream,
                     Key = thumbFileName,
@@ -215,7 +215,7 @@ namespace Grand.Business.Storage.Services
         {
             await CheckBucketExists();
 
-            var listObjectsRequest = new ListObjectsV2Request() {
+            var listObjectsRequest = new ListObjectsV2Request {
                 BucketName = _bucketName
             };
             var listObjectsResponse = await _s3Client.ListObjectsV2Async(listObjectsRequest);

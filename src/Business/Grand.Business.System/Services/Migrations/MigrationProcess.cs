@@ -1,4 +1,5 @@
-﻿using Grand.Domain.Data;
+﻿using Grand.Data;
+using Grand.Domain;
 using Grand.Infrastructure.Migrations;
 using Microsoft.Extensions.Logging;
 
@@ -52,11 +53,10 @@ namespace Grand.Business.System.Services.Migrations
 
         private void SaveMigration(MigrationResult migrationResult, bool install = false)
         {
-            _repositoryMigration.Insert(new MigrationDb() {
+            _repositoryMigration.Insert(new MigrationDb {
                 Identity = migrationResult.Migration.Identity,
                 Name = migrationResult.Migration.Name,
                 Version = migrationResult.Migration.Version.ToString(),
-                CreatedOnUtc = DateTime.UtcNow,
                 InstallApp = install
             });
         }
@@ -84,7 +84,7 @@ namespace Grand.Business.System.Services.Migrations
             var migrationManager = new MigrationManager();
             foreach (var item in migrationManager.GetCurrentMigrations())
             {
-                SaveMigration(new MigrationResult() {
+                SaveMigration(new MigrationResult {
                     Migration = item,
                     Success = true
                 }, true);

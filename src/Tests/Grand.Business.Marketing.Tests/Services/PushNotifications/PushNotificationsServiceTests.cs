@@ -1,8 +1,7 @@
-﻿using Grand.Business.Core.Interfaces.Common.Logging;
-using Grand.Business.Marketing.Services.PushNotifications;
+﻿using Grand.Business.Marketing.Services.PushNotifications;
 using Grand.Business.Marketing.Utilities;
 using Grand.Data.Tests.MongoDb;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.PushNotifications;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -35,7 +34,7 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
 
             var mockMessageHandler = new Mock<HttpMessageHandler>();
 
-            var output = JsonConvert.SerializeObject(new JsonResponse() { success = 1, failure = 0, canonical_ids = 1 });
+            var output = JsonConvert.SerializeObject(new JsonResponse { success = 1, failure = 0, canonical_ids = 1 });
 
             mockMessageHandler.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -76,7 +75,7 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         public async Task GetPushReceiverByCustomerIdTest()
         {
             //Arrange
-            var pushRegistration = new PushRegistration() { CustomerId = "1" };
+            var pushRegistration = new PushRegistration { CustomerId = "1" };
             await _pushNotificationsService.InsertPushReceiver(pushRegistration);
 
             //Act
@@ -91,7 +90,7 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         public async Task UpdatePushReceiverTest()
         {
             //Arrange
-            var pushRegistration = new PushRegistration() { CustomerId = "1" };
+            var pushRegistration = new PushRegistration { CustomerId = "1" };
             await _pushNotificationsService.InsertPushReceiver(pushRegistration);
 
             //Act
@@ -106,8 +105,8 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         public async Task GetPushReceiversTest()
         {
             //Arrange
-            await _pushNotificationsService.InsertPushReceiver(new PushRegistration() { Allowed = true });
-            await _pushNotificationsService.InsertPushReceiver(new PushRegistration() { Allowed = true });
+            await _pushNotificationsService.InsertPushReceiver(new PushRegistration { Allowed = true });
+            await _pushNotificationsService.InsertPushReceiver(new PushRegistration { Allowed = true });
 
             //Act
             var result = await _pushNotificationsService.GetPushReceivers();
@@ -121,7 +120,7 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         {
             //Arrange
             await _pushNotificationsService.InsertPushReceiver(new PushRegistration());
-            await _pushNotificationsService.InsertPushReceiver(new PushRegistration() { Allowed = true });
+            await _pushNotificationsService.InsertPushReceiver(new PushRegistration { Allowed = true });
 
             //Act
             var result = await _pushNotificationsService.GetAllowedReceivers();
@@ -135,7 +134,7 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         {
             //Arrange
             await _pushNotificationsService.InsertPushReceiver(new PushRegistration());
-            await _pushNotificationsService.InsertPushReceiver(new PushRegistration() { Allowed = true });
+            await _pushNotificationsService.InsertPushReceiver(new PushRegistration { Allowed = true });
 
             //Act
             var result = await _pushNotificationsService.GetDeniedReceivers();
@@ -172,9 +171,9 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         public async Task GetPushReceiversTest1()
         {
             //Arrange
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
 
             //Act
             var result = await _pushNotificationsService.GetPushReceivers();
@@ -187,9 +186,9 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         public async Task SendPushNotificationTest()
         {
             //Arrange
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
             //Act
             var result = await _pushNotificationsService.SendPushNotification("my title", "sample text", "", "");
             //Assert
@@ -201,9 +200,9 @@ namespace Grand.Business.Marketing.Tests.Services.PushNotifications
         public async Task GetPushReceiverTest()
         {
             //Arrange
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Id = "1", Allowed = true });
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
-            await _repositoryPushRegistration.InsertAsync(new PushRegistration() { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Id = "1", Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
+            await _repositoryPushRegistration.InsertAsync(new PushRegistration { Allowed = true });
 
             //Act
             var result = await _pushNotificationsService.GetPushReceiver("1");

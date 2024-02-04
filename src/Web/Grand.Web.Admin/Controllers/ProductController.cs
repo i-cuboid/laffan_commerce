@@ -3,7 +3,6 @@ using Grand.Business.Core.Extensions;
 using Grand.Business.Core.Interfaces.Catalog.Products;
 using Grand.Business.Core.Interfaces.Common.Directory;
 using Grand.Business.Core.Interfaces.Common.Localization;
-using Grand.Business.Core.Interfaces.Common.Logging;
 using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Interfaces.ExportImport;
 using Grand.Business.Core.Interfaces.Storage;
@@ -96,7 +95,10 @@ namespace Grand.Web.Admin.Controllers
         #region Product list / create / edit / delete
 
         //list products
-        public IActionResult Index() => RedirectToAction("List");
+        public IActionResult Index()
+        {
+            return RedirectToAction("List");
+        }
 
         public async Task<IActionResult> List()
         {
@@ -187,7 +189,7 @@ namespace Grand.Web.Admin.Controllers
             }
 
             var model = product.ToModel(_dateTimeService);
-            model.Ticks = product.UpdatedOnUtc.Ticks;
+            //model.Ticks = product.UpdatedOnUtc.Ticks;
 
             await _productViewModelService.PrepareProductModel(model, product, false, false);
             await AddLocales(_languageService, model.Locales, (locale, languageId) =>
@@ -219,7 +221,7 @@ namespace Grand.Web.Admin.Controllers
                     return RedirectToAction("Edit", new { id = product.Id });
             }
 
-            if (model.Ticks != product.UpdatedOnUtc.Ticks)
+            if (model.Ticks != product.Ticks)
             {
                 Error(_translationService.GetResource("Admin.Catalog.Products.Fields.ChangedWarning"));
                 return RedirectToAction("Edit", new { id = product.Id });
@@ -2413,29 +2415,7 @@ namespace Grand.Web.Admin.Controllers
         #endregion
 
         #endregion
-
-        #region Activity log
-
-        [PermissionAuthorizeAction(PermissionActionName.Preview)]
-        [HttpPost]
-        public async Task<IActionResult> ListActivityLog(DataSourceRequest command, string productId)
-        {
-            var product = await _productService.GetProductById(productId);
-
-            var permission = await CheckAccessToProduct(product);
-            if (!permission.allow)
-                return ErrorForKendoGridJson(permission.message);
-
-            var (activityLogModels, totalCount) = await _productViewModelService.PrepareActivityLogModel(productId, command.Page, command.PageSize);
-            var gridModel = new DataSourceResult {
-                Data = activityLogModels.ToList(),
-                Total = totalCount
-            };
-            return Json(gridModel);
-        }
-
-        #endregion
-
+        
         #region Reservation
 
         [PermissionAuthorizeAction(PermissionActionName.Preview)]
@@ -2704,7 +2684,7 @@ namespace Grand.Web.Admin.Controllers
 
         [PermissionAuthorizeAction(PermissionActionName.Edit)]
         [HttpPost]
-        public async Task<IActionResult> BidDelete(ProductModel.BidModel model, [FromServices] ICustomerActivityService customerActivityService)
+        public async Task<IActionResult> BidDelete(ProductModel.BidModel model)
         {
             var product = await _productService.GetProductById(model.ProductId);
             if (product == null)
@@ -2719,10 +2699,6 @@ namespace Grand.Web.Admin.Controllers
             {
                 if (string.IsNullOrEmpty(toDelete.OrderId))
                 {
-                    //activity log
-                    _ = customerActivityService.InsertActivity("DeleteBid", toDelete.ProductId,
-                        _workContext.CurrentCustomer, HttpContext.Connection?.RemoteIpAddress?.ToString(),
-                        _translationService.GetResource("ActivityLog.DeleteBid"), product.Name);
                     //delete bid
                     await _auctionService.DeleteBid(toDelete);
                     return Json("");

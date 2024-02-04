@@ -2,17 +2,15 @@
 using FluentValidation;
 using Grand.Business.Core.Interfaces.Authentication;
 using Grand.Business.Core.Interfaces.Common.Configuration;
-using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Core.Utilities.Authentication;
-using Grand.Business.Core.Utilities.Common.Security;
 using Grand.Domain.Configuration;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure;
 using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Plugins;
 using Grand.Infrastructure.TypeSearch;
 using Grand.SharedKernel.Extensions;
-using Grand.Web.Common.Themes;
+using Grand.Web.Common.View;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -20,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json.Serialization;
 using StackExchange.Redis;
@@ -91,7 +90,7 @@ namespace Grand.Web.Common.Infrastructure
             //themes support
             services.Configure<RazorViewEngineOptions>(options =>
             {
-                options.ViewLocationExpanders.Add(new ThemeViewLocationExpander());
+                options.ViewLocationExpanders.Add(new ViewLocationExpander());
             });
         }
 
@@ -260,32 +259,6 @@ namespace Grand.Web.Common.Infrastructure
             return mvcBuilder;
         }
 
-        /// <summary>
-        /// Add mini profiler service for the application
-        /// </summary>
-        /// <param name="services">Collection of service descriptors</param>
-        public static void AddGrandMiniProfiler(this IServiceCollection services)
-        {
-            //whether database is already installed
-            if (!DataSettingsManager.DatabaseIsInstalled())
-                return;
-
-            //add MiniProfiler services
-            services.AddMiniProfiler(options =>
-            {
-                options.IgnoredPaths.Add("/api");
-                options.IgnoredPaths.Add("/odata");
-                options.IgnoredPaths.Add("/health/live");
-                options.IgnoredPaths.Add("/.well-known/pki-validation");
-                //determine who can access the MiniProfiler results
-                options.ResultsAuthorize = request =>
-                    !request.HttpContext.RequestServices.GetRequiredService<PerformanceConfig>()
-                        .DisplayMiniProfilerInPublicStore ||
-                    request.HttpContext.RequestServices.GetRequiredService<IPermissionService>()
-                        .Authorize(StandardPermission.ManageAccessAdminPanel).Result;
-            });
-        }
-
         public static void AddSettings(this IServiceCollection services)
         {
             var typeSearcher = new TypeSearcher();
@@ -317,13 +290,27 @@ namespace Grand.Web.Common.Infrastructure
                 tags: new[] { "mongodb" });
         }
 
-        public static void AddApplicationInsights(this IServiceCollection services, IConfiguration configuration)
+        public static void AddGrandApplicationInsights(this IServiceCollection services, IConfiguration configuration)
         {
             var applicationInsights = new ApplicationInsightsConfig();
             configuration.GetSection("ApplicationInsights").Bind(applicationInsights);
             if (applicationInsights.Enabled)
             {
                 services.AddApplicationInsightsTelemetry();
+                services.AddLogging(builder =>
+                {
+                    builder.AddApplicationInsights(
+                        configureTelemetryConfiguration: (config) =>
+                        {
+                            config.ConnectionString = applicationInsights.ConnectionString;
+                        },
+                        configureApplicationInsightsLoggerOptions: (options) =>
+                        {
+                            options.IncludeScopes = false;
+                            options.TrackExceptionsAsExceptionTelemetry = false;
+                        }
+                    );
+                });
             }
         }
 

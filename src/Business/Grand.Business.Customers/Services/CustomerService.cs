@@ -4,7 +4,7 @@ using Grand.Business.Core.Queries.Customers;
 using Grand.Domain;
 using Grand.Domain.Common;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Orders;
 using Grand.Domain.Shipping;
 using Grand.Domain.Stores;
@@ -250,7 +250,6 @@ namespace Grand.Business.Customers.Services
                 CustomerGuid = Guid.NewGuid(),
                 Active = true,
                 StoreId = store.Id,
-                CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow
             };
             //add to 'Guests' group

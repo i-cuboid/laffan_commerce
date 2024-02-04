@@ -1,7 +1,7 @@
 ﻿using Grand.Business.Core.Interfaces.Common.Security;
 using Grand.Business.Messages.Services;
 using Grand.Domain.Catalog;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Messages;
 using Grand.Infrastructure.Caching;
 using Grand.Infrastructure.Configuration;
@@ -43,7 +43,7 @@ namespace Grand.Business.Messages.Tests.Services
         [TestMethod]
         public async Task CopyMessageTemplate_InsertCopyEntity()
         {
-            var template = new MessageTemplate() {
+            var template = new MessageTemplate {
                 Id = "id1",
                 Name = "Name"
             };

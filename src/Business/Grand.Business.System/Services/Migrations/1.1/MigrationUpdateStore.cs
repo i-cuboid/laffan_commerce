@@ -1,4 +1,4 @@
-﻿using Grand.Domain.Data;
+﻿using Grand.Data;
 using Grand.Domain.Stores;
 using Grand.Infrastructure.Migrations;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,7 +31,7 @@ namespace Grand.Business.System.Services.Migrations._1._1
                     {
                         var storeUri = new Uri(store.Url);
                         var httpscheme = store.SslEnabled ? "https" : "http";
-                        var domain = new DomainHost() {
+                        var domain = new DomainHost {
                             HostName = storeUri.Authority,
                             Url = $"{httpscheme}://{storeUri.Authority}",
                             Primary = true

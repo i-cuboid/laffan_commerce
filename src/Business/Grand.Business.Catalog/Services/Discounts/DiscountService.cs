@@ -3,7 +3,7 @@ using Grand.Business.Core.Utilities.Catalog;
 using Grand.Domain;
 using Grand.Domain.Catalog;
 using Grand.Domain.Customers;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Domain.Directory;
 using Grand.Domain.Discounts;
 using Grand.Domain.Orders;
@@ -385,14 +385,12 @@ namespace Grand.Business.Catalog.Services.Discounts
         /// <param name="currency">Currency</param>
         /// <param name="couponCodeToValidate">Coupon code</param>
         /// <returns>Discount validation result</returns>
-        public virtual async Task<DiscountValidationResult> ValidateDiscount(Discount discount, Customer customer, Currency currency, string couponCodeToValidate)
+        public virtual Task<DiscountValidationResult> ValidateDiscount(Discount discount, Customer customer, Currency currency, string couponCodeToValidate)
         {
-            if (!string.IsNullOrEmpty(couponCodeToValidate))
-            {
-                return await ValidateDiscount(discount, customer, currency, new[] { couponCodeToValidate });
-            }
-
-            return await ValidateDiscount(discount, customer, currency, Array.Empty<string>());
+            var couponCodes = string.IsNullOrWhiteSpace(couponCodeToValidate) ? Array.Empty<string>() : [
+                couponCodeToValidate
+            ];
+            return ValidateDiscount(discount, customer, currency, couponCodes);
         }
 
         /// <summary>

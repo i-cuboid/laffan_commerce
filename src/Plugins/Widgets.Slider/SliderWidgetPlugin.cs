@@ -1,7 +1,7 @@
 using Grand.Business.Core.Extensions;
 using Grand.Business.Core.Interfaces.Common.Localization;
 using Grand.Business.Core.Interfaces.Storage;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure.Plugins;
 using Grand.SharedKernel.Extensions;
 using Widgets.Slider.Domain;
@@ -45,8 +45,7 @@ namespace Widgets.Slider
             var byte1 = await File.ReadAllBytesAsync(sampleImagesPath + "banner1.png");
             var byte2 = await File.ReadAllBytesAsync(sampleImagesPath + "banner2.png");
 
-            var pictureSlider1 = new PictureSlider()
-            {
+            var pictureSlider1 = new PictureSlider {
                 DisplayOrder = 0,
                 Link = "",
                 Name = "Sample slider 1",
@@ -60,8 +59,7 @@ namespace Widgets.Slider
             await _pictureSliderRepository.InsertAsync(pictureSlider1);
 
 
-            var pictureSlider2 = new PictureSlider()
-            {
+            var pictureSlider2 = new PictureSlider {
                 DisplayOrder = 1,
                 Link = "https://grandnode.com",
                 Name = "Sample slider 2",

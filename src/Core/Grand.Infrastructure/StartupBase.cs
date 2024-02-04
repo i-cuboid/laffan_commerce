@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Grand.Domain.Data;
+using Grand.Data;
 using Grand.Infrastructure.Caching.RabbitMq;
 using Grand.Infrastructure.Configuration;
 using Grand.Infrastructure.Extensions;
@@ -203,7 +203,7 @@ namespace Grand.Infrastructure
             services.AddHttpContextAccessor();
             //add AppConfig configuration parameters
             services.StartupConfig<AppConfig>(configuration.GetSection("Application"));
-            var performanceConfig = services.StartupConfig<PerformanceConfig>(configuration.GetSection("Performance"));
+            services.StartupConfig<PerformanceConfig>(configuration.GetSection("Performance"));
             services.StartupConfig<SecurityConfig>(configuration.GetSection("Security"));
             services.StartupConfig<ExtensionsConfig>(configuration.GetSection("Extensions"));
             services.StartupConfig<CacheConfig>(configuration.GetSection("Cache"));
@@ -229,11 +229,10 @@ namespace Grand.Infrastructure
 
             CommonPath.WebHostEnvironment = hostingEnvironment.WebRootPath;
             CommonPath.BaseDirectory = hostingEnvironment.ContentRootPath;
-            
-            services.AddTransient<FluentValidationFilter>();
+            services.AddTransient<ValidationFilter>();
             var mvcCoreBuilder = services.AddMvcCore(options =>
             {
-                options.Filters.AddService<FluentValidationFilter>();
+                options.Filters.AddService<ValidationFilter>();
                 var frontConfig = new FrontendAPIConfig();
                 configuration.GetSection("FrontendAPI").Bind(frontConfig);
                 if (frontConfig.JsonContentType)
@@ -242,7 +241,7 @@ namespace Grand.Infrastructure
                     options.UseJsonBodyModelBinderProviderInsteadOf<ComplexObjectModelBinderProvider>();
                 }
             });
-
+            
             return mvcCoreBuilder;
         }
 
