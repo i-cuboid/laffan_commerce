@@ -294,9 +294,10 @@ namespace Grand.Web.Common.Infrastructure
         {
             var applicationInsights = new ApplicationInsightsConfig();
             configuration.GetSection("ApplicationInsights").Bind(applicationInsights);
-            if (applicationInsights.Enabled)
+            if (!string.IsNullOrEmpty(applicationInsights.ConnectionString))
             {
                 services.AddApplicationInsightsTelemetry();
+                services.AddServiceProfiler();
                 services.AddLogging(builder =>
                 {
                     builder.AddApplicationInsights(

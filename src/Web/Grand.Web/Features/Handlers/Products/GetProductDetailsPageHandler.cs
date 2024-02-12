@@ -149,8 +149,7 @@ namespace Grand.Web.Features.Handlers.Products
         private async Task<ProductDetailsModel> PrepareProductDetailsModel(Store store, Product product,
             ShoppingCartItem updateCartItem, bool isAssociatedProduct)
         {
-            if (product == null)
-                throw new ArgumentNullException(nameof(product));
+            ArgumentNullException.ThrowIfNull(product);
 
             var model = await PrepareStandardProperties(product, updateCartItem);
 
@@ -577,8 +576,7 @@ namespace Grand.Web.Features.Handlers.Products
                             Id = tag.Id,
                             Name = tag.GetTranslation(y => y.Name, _workContext.WorkingLanguage.Id),
                             SeName = tag.SeName,
-                            ProductCount =
-                                await _productTagService.GetProductCount(tag.Id, _workContext.CurrentStore.Id)
+                            ProductCount = tag.Count
                         });
                     }
                 }
