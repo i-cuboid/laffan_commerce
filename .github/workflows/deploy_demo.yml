@@ -1,4 +1,4 @@
-name: Release to DEV from develop
+name: Release to Demo from main
 
 on:
   schedule:
