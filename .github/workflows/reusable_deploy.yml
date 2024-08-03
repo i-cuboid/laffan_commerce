@@ -1,0 +1,239 @@
+name: Reusable deployment workflow
+
+# Controls when the workflow will run
+on:
+  workflow_call:
+    inputs:
+      webapp_name:
+        required: true
+        type: string
+      webapp_slot:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      needs_approval:
+        required: true
+        type: boolean
+      run_tests:
+        required: true
+        type: boolean
+      store_artifact:
+        required: true
+        type: boolean
+    secrets:
+      mongo_connection_string:
+        required: true
+      blob_connection_string:
+        required: true
+      blob_container:
+        required: true
+      blob_endpoint:
+        required: true
+      publish_profile:
+        required: true
+
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: src/Web/Grand.Web/publish
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 8.0.x
+  WORKING_DIRECTORY: src/Web/Grand.Web  
+jobs:
+  build:
+    name: "Build & Publish to Azure"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ inputs.branch }}
+    
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d'-%H-%M)" >> $GITHUB_OUTPUT
+    
+    - name: Approval Request
+      uses: trstringer/manual-approval@v1
+      if: ${{ inputs.needs_approval }}
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: Nikhil13x,SnehaNikhil,SunilParisi123,balureddy003
+        minimum-approvals: 1
+        issue-title: Deploying to ${{ inputs.webapp_name }}
+    
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    
+    - name: Update Conn String
+      uses: jossef/action-set-json-field@v1
+      with:
+        file: src/Web/Grand.Web/App_Data/Settings.cfg
+        field: ConnectionString
+        value: ${{ secrets.mongo_connection_string }}
+
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8 #install the python needed
+          
+    - name: Install Python packages
+      run: |
+        python -m pip install json_minify
+    
+    - name: Cleanup appsettings.json
+      run: |
+        python3 ./actions/json_cleaner/init.py
+
+    - name: Update Azure settings
+      uses: jossef/action-set-json-field@v1
+      with:
+        file: src/Web/Grand.Web/App_Data/appsettings.json
+        field: Azure.RunOnAzureWebApps
+        value: true
+
+    - name: Update Plugin Dll settings
+      uses: jossef/action-set-json-field@v1
+      with:
+        file: src/Web/Grand.Web/App_Data/appsettings.json
+        field: Extensions.ClearPluginShadowDirectoryOnStartup
+        value: false
+
+    - name: Update Plugin Dll settings
+      uses: jossef/action-set-json-field@v1
+      with:
+        file: src/Web/Grand.Web/App_Data/appsettings.json
+        field: Extensions.PluginShadowCopy
+        value: false
+
+    # - name: Update Rewrite settngs
+    #   uses: jossef/action-set-json-field@v1
+    #   with:
+    #     file: src/Web/Grand.Web/App_Data/appsettings.json
+    #     field: UrlRewrite.UseUrlRewrite
+    #     value: true
+
+    # - name: Enable AppInsights
+    #   uses: jossef/action-set-json-field@v1
+    #   with:
+    #     file: src/Web/Grand.Web/App_Data/appsettings.json
+    #     field: ApplicationInsights.Enabled
+    #     value: true
+
+    # - name: Update Blob Conn String
+    #   uses: jossef/action-set-json-field@v1
+    #   with:
+    #     file: src/Web/Grand.Web/App_Data/appsettings.json
+    #     field: Azure.AzureBlobStorageConnectionString
+    #     value: ${{ secrets.blob_connection_string }}
+
+    # - name: Update Blob Container
+    #   uses: jossef/action-set-json-field@v1
+    #   with:
+    #     file: src/Web/Grand.Web/App_Data/appsettings.json
+    #     field: Azure.AzureBlobStorageContainerName
+    #     value: ${{ secrets.blob_container }}
+
+    # - name: Update Blob Endpoint
+    #   uses: jossef/action-set-json-field@v1
+    #   with:
+    #     file: src/Web/Grand.Web/App_Data/appsettings.json
+    #     field: Azure.AzureBlobStorageEndPoint
+    #     value: ${{ secrets.blob_endpoint }}
+
+    - name: Create mongoDB Docker container      
+      if: ${{ inputs.run_tests }}
+      run: sudo docker run -d -p 27017:27017 mongo:latest
+    
+    - name: Restore
+      run: dotnet restore "${{ env.WORKING_DIRECTORY }}"
+    
+    - name: Build sln
+      run: dotnet build "GrandNode.sln"
+    
+    - name: Build
+      run: dotnet build "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+
+    - name: Grand.Business.Authentication Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Authentication.Tests/Grand.Business.Authentication.Tests.csproj
+
+    - name: Grand.Business.Catalog Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Catalog.Tests/Grand.Business.Catalog.Tests.csproj
+
+    - name: Grand.Business.Checkout Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Checkout.Tests/Grand.Business.Checkout.Tests.csproj
+
+    - name: Grand.Business.Cms Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Cms.Tests/Grand.Business.Cms.Tests.csproj
+
+    - name: Grand.Business.Common Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Common.Tests/Grand.Business.Common.Tests.csproj
+
+    - name: Grand.Business.Customers Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Customers.Tests/Grand.Business.Customers.Tests.csproj
+
+    - name: Grand.Business.Marketing Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Marketing.Tests/Grand.Business.Marketing.Tests.csproj
+
+    - name: Grand.Business.Messages Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Messages.Tests/Grand.Business.Messages.Tests.csproj
+
+    - name: Grand.Business.Storage Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.Storage.Tests/Grand.Business.Storage.Tests.csproj
+
+    - name: Grand.Business.System Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Business.System.Tests/Grand.Business.System.Tests.csproj
+
+    - name: Grand.Business.Data Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Data.Tests/Grand.Data.Tests.csproj
+
+    - name: Grand.Domain.Domain.Tests Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Domain.Tests/Grand.Domain.Tests.csproj
+
+    - name: Grand.Infrastructure.Tests Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Infrastructure.Tests/Grand.Infrastructure.Tests.csproj
+
+    - name: Grand.SharedKernel.Tests Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.SharedKernel.Tests/Grand.SharedKernel.Tests.csproj
+
+    - name: Grand.Web.Common.Tests Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Web.Common.Tests/Grand.Web.Common.Tests.csproj
+    
+    - name: Grand.Web.Admin.Tests Unit Tests
+      if: ${{ inputs.run_tests }}
+      run: dotnet test ./src/Tests/Grand.Web.Admin.Tests/Grand.Web.Admin.Tests.csproj
+        
+    - name: Publish
+      run: dotnet publish "${{ env.WORKING_DIRECTORY }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: '${{ inputs.webapp_name }}'
+        slot-name: '${{ inputs.webapp_slot }}'
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        publish-profile: ${{ secrets.publish_profile }}
+
+    - name: Upload artifact for deployment job
+      if: ${{ inputs.store_artifact }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: .net-app
+        path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} 

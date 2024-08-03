@@ -1,0 +1,24 @@
+name: Release to DEV from develop
+
+on:
+  schedule:
+    - cron:  '30 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  call-build-deploy-workflow:
+    name: 'Demo Deployment'
+    uses: ./.github/workflows/reusable_deploy.yml
+    with:
+      webapp_name: ${{ vars.DEMO_APP_NAME }}
+      webapp_slot: ${{ vars.DEMO_APP_SLOT }}
+      branch: main
+      needs_approval: false
+      run_tests: false
+      store_artifact: false
+    secrets:
+      mongo_connection_string: ${{ secrets.DEMO_CONN_STRING }}
+      blob_connection_string: ${{ secrets.DEMO_AZURE_BLOB_CONN_STRING }}
+      blob_container: ${{ secrets.DEMO_AZURE_BLOB_CONTAINER }}
+      blob_endpoint: ${{ secrets.DEMO_AZURE_BLOB_ENDPOINT }}
+      publish_profile: ${{ secrets[format('DEMO_PUBLISH_PROFILE_{0}', vars.DEMO_APP_SLOT)] }}
