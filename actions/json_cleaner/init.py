@@ -1,4 +1,4 @@
-import json
+﻿import json
 from json_minify import json_minify
 
 with open('./src/Web/Grand.Web/App_Data/appsettings.json', 'r') as jsonfile:
