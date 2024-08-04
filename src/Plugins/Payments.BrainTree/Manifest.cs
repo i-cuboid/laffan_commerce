@@ -5,6 +5,6 @@ using Payments.BrainTree;
     FriendlyName = "BrainTree",
     Group = "Payment methods",
     SystemName = BrainTreeDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

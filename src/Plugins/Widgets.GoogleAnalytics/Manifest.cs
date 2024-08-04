@@ -5,6 +5,6 @@ using Widgets.GoogleAnalytics;
     FriendlyName = "Google Analytics or Universal Analytics",
     Group = "Widgets",
     SystemName = GoogleAnalyticDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

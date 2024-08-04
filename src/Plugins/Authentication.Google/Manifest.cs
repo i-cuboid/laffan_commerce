@@ -5,6 +5,6 @@ using Grand.Infrastructure.Plugins;
     FriendlyName = "Google authentication",
     Group = "Authentication methods",
     SystemName = GoogleAuthenticationDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

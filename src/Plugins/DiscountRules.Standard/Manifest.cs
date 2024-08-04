@@ -4,6 +4,6 @@
     FriendlyName = "Standard discount requirements",
     Group = "Discount requirements",
     SystemName = "DiscountRules.Standard",
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

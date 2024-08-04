@@ -5,6 +5,6 @@ using Payments.CashOnDelivery;
     FriendlyName = "Cash On Delivery (COD)",
     Group = "Payment methods",
     SystemName = CashOnDeliveryPaymentDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

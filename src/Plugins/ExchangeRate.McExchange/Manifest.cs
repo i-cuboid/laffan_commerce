@@ -4,6 +4,6 @@
     FriendlyName = "Money converter exchange rate provider (from EUR: ECB, from PLN: NBP)",
     Group = "Exchange rate providers",
     SystemName = "CurrencyExchange.MoneyConverter",
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

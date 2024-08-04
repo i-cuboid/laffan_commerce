@@ -5,6 +5,6 @@ using Grand.Infrastructure.Plugins;
     FriendlyName = "Facebook authentication",
     Group = "Authentication methods",
     SystemName = FacebookAuthenticationDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

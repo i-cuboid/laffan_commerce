@@ -5,6 +5,6 @@ using Tax.FixedRate;
     FriendlyName = "Fixed tax rate provider",
     Group = "Tax providers",
     SystemName = FixedRateTaxDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

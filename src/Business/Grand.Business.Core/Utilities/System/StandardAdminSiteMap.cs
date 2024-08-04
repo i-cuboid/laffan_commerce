@@ -1153,32 +1153,32 @@ public static class StandardAdminSiteMap
             }
         },
 
-        new AdminSiteMap {
-            SystemName = "Help",
-            ResourceName = "Admin.Help",
-            IconClass = "icon-question",
-            DisplayOrder = 11,
-            ChildNodes = new List<AdminSiteMap> {
-                new() {
-                    SystemName = "Community forums",
-                    ResourceName = "Admin.Help.Forums",
-                    Url =
-                        "https://grandnode.com/boards?utm_source=web&utm_medium=admin&utm_term=web&utm_campaign=Community",
-                    IconClass = "fa fa-dot-circle-o",
-                    DisplayOrder = 0,
-                    OpenUrlInNewTab = true
-                },
-                new() {
-                    SystemName = "Premium support services",
-                    ResourceName = "Admin.Help.SupportServices",
-                    Url =
-                        "https://grandnode.com/premium-support-packages?utm_source=web&utm_medium=admin&utm_term=web&utm_campaign=Support",
-                    IconClass = "fa fa-dot-circle-o",
-                    DisplayOrder = 1,
-                    OpenUrlInNewTab = true
-                }
-            }
-        },
+        //new AdminSiteMap {
+        //    SystemName = "Help",
+        //    ResourceName = "Admin.Help",
+        //    IconClass = "icon-question",
+        //    DisplayOrder = 11,
+        //    ChildNodes = new List<AdminSiteMap> {
+        //        new() {
+        //            SystemName = "Community forums",
+        //            ResourceName = "Admin.Help.Forums",
+        //            Url =
+        //                "https://grandnode.com/boards?utm_source=web&utm_medium=admin&utm_term=web&utm_campaign=Community",
+        //            IconClass = "fa fa-dot-circle-o",
+        //            DisplayOrder = 0,
+        //            OpenUrlInNewTab = true
+        //        },
+        //        new() {
+        //            SystemName = "Premium support services",
+        //            ResourceName = "Admin.Help.SupportServices",
+        //            Url =
+        //                "https://grandnode.com/premium-support-packages?utm_source=web&utm_medium=admin&utm_term=web&utm_campaign=Support",
+        //            IconClass = "fa fa-dot-circle-o",
+        //            DisplayOrder = 1,
+        //            OpenUrlInNewTab = true
+        //        }
+        //    }
+        //},
 
         new AdminSiteMap {
             SystemName = "Third party plugins",

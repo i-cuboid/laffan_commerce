@@ -5,6 +5,6 @@ using Shipping.ShippingPoint;
     FriendlyName = "Shipping Point",
     Group = "Shipping rate",
     SystemName = ShippingPointRateDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

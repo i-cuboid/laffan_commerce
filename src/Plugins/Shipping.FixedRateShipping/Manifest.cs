@@ -5,6 +5,6 @@ using Shipping.FixedRateShipping;
     FriendlyName = "Fixed Rate Shipping",
     Group = "Shipping rate",
     SystemName = FixedRateShippingDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

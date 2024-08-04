@@ -5,6 +5,6 @@ using Payments.StripeCheckout;
     FriendlyName = "Stripe Checkout",
     Group = "Payment methods",
     SystemName = StripeCheckoutDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "1.0.0"
 )]

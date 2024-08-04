@@ -5,6 +5,6 @@ using Widgets.FacebookPixel;
     FriendlyName = "Facebook Pixel",
     Group = "Widgets",
     SystemName = FacebookPixelDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

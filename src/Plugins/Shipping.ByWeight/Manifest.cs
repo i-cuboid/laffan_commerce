@@ -5,6 +5,6 @@ using Shipping.ByWeight;
     FriendlyName = "Shipping by weight",
     Group = "Shipping rate",
     SystemName = ByWeightShippingDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.1"
 )]

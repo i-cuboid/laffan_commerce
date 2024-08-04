@@ -5,6 +5,6 @@ using Widgets.Slider;
     FriendlyName = "Bootstrap Slider",
     Group = "Widgets",
     SystemName = SliderWidgetDefaults.ProviderSystemName,
-    Author = "grandnode team",
+    Author = "iCuboid team",
     Version = "2.1.2"
 )]
